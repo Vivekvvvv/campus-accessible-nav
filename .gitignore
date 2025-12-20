@@ -1,0 +1,35 @@
+# Local env
+.env
+.env.local
+
+# Local run
+.run/
+.logs/
+backend/logs/
+
+# Claude Code
+.claude/
+
+# Database
+backend/data/h2/
+
+# Uploads
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Build outputs
+backend/target/
+frontend/dist/
+
+# Docker volumes
+.mysql/
