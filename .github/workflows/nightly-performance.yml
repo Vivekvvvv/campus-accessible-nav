@@ -1,0 +1,156 @@
+name: Nightly Performance Baseline
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      gate_mode:
+        description: 'Performance gate mode'
+        required: true
+        default: 'warn'
+        type: choice
+        options:
+          - warn
+          - fail
+      duration_sec:
+        description: 'Benchmark duration (seconds)'
+        required: false
+        default: '180'
+      concurrency:
+        description: 'Benchmark concurrency'
+        required: false
+        default: '20'
+      target_rps:
+        description: 'Benchmark target RPS (0 means unlimited by loop)'
+        required: false
+        default: '60'
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '18'
+
+jobs:
+  route-benchmark-nightly:
+    name: Route Benchmark Nightly (Soft Gate)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build backend jar
+        working-directory: backend
+        run: mvn -s .mvn/settings.xml -DskipTests package -B
+
+      - name: Start backend (test profile)
+        run: |
+          set -euo pipefail
+          JAR="$(ls -1 backend/target/accessible-nav-backend-*.jar | head -n 1)"
+          nohup java -jar "$JAR" --server.port=18081 --spring.profiles.active=test > .run-nightly-backend.log 2>&1 &
+          echo "$!" > .run-nightly-backend.pid
+
+          for i in $(seq 1 90); do
+            if curl -fsS "http://localhost:18081/actuator/health" >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "Backend failed to start in time."
+          tail -n 200 .run-nightly-backend.log || true
+          exit 1
+
+      - name: Run route benchmark (fail-on-threshold, soft gate)
+        id: benchmark
+        run: |
+          set +e
+          mkdir -p .run/perf
+          DURATION="${{ github.event.inputs.duration_sec || '180' }}"
+          CONCURRENCY="${{ github.event.inputs.concurrency || '20' }}"
+          TARGET_RPS="${{ github.event.inputs.target_rps || '60' }}"
+          REPORT=".run/perf/nightly-route-benchmark-${GITHUB_RUN_ID}.json"
+
+          node scripts/perf/route-benchmark.mjs \
+            --base-url http://localhost:18081 \
+            --path /api/route \
+            --duration-sec "$DURATION" \
+            --concurrency "$CONCURRENCY" \
+            --target-rps "$TARGET_RPS" \
+            --max-p95-ms 1500 \
+            --max-error-rate 0.02 \
+            --fail-on-threshold \
+            --out "$REPORT"
+          CODE=$?
+
+          echo "exit_code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "report=$REPORT" >> "$GITHUB_OUTPUT"
+
+          if [ "$CODE" -ne 0 ]; then
+            echo "::warning::Nightly route benchmark exceeded threshold (non-blocking in warn mode)."
+          fi
+          exit 0
+
+      - name: Publish benchmark summary
+        if: always()
+        run: |
+          set -euo pipefail
+          REPORT="${{ steps.benchmark.outputs.report }}"
+          MODE="${{ github.event.inputs.gate_mode || 'warn' }}"
+          CODE="${{ steps.benchmark.outputs.exit_code }}"
+
+          echo "## Nightly Route Benchmark" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- gate mode: \`$MODE\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- threshold exit code: \`$CODE\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- report: \`$REPORT\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f "$REPORT" ]; then
+            echo "### Result Snapshot" >> "$GITHUB_STEP_SUMMARY"
+            jq '{totals, latencyMs, statusCount}' "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Report not found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enforce blocking gate (manual fail mode only)
+        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.gate_mode == 'fail'
+        run: |
+          test "${{ steps.benchmark.outputs.exit_code }}" = "0"
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-route-benchmark
+          path: |
+            .run/perf/nightly-route-benchmark-*.json
+            .run-nightly-backend.log
+          retention-days: 14
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f .run-nightly-backend.pid ]; then
+            kill "$(cat .run-nightly-backend.pid)" || true
+          fi

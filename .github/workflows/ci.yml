@@ -1,0 +1,617 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      run_hazard_edge_only:
+        description: 'Run only Navigation Hazard Edge Cases E2E suite'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # Spring Boot 3 baseline in this repo uses Java 21+
+  JAVA_VERSION: '21'
+  NODE_VERSION: '18'
+
+jobs:
+  security-policy:
+    name: Security Policy (Allowlist + Expiry)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate vulnerability allowlists (expiry + reason)
+        run: bash scripts/security/check-vuln-allowlist.sh
+
+  # Backend Build and Test
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build and Test
+        run: mvn -s .mvn/settings.xml clean verify -B
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco/
+          retention-days: 7
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+          retention-days: 7
+
+  api-contract:
+    name: OpenAPI Contract (Breaking Gate)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build/run base + head OpenAPI and check breaking changes
+        run: |
+          set -euo pipefail
+
+          NEW_SPEC="$RUNNER_TEMP/openapi-new.json"
+          OLD_SPEC="$RUNNER_TEMP/openapi-old.json"
+          REPORT_MD="$RUNNER_TEMP/openapi-breaking-report.md"
+          BASE_DIR="$RUNNER_TEMP/base-tree"
+
+          cleanup() {
+            pkill -f "server.port=18081" || true
+            pkill -f "server.port=18082" || true
+            if [ -d "$BASE_DIR/.git" ] || [ -d "$BASE_DIR" ]; then
+              git worktree remove "$BASE_DIR" --force || true
+            fi
+          }
+          trap cleanup EXIT
+
+          # Head spec
+          pushd backend
+          mvn -s .mvn/settings.xml -DskipTests package -B
+          HEAD_JAR="$(ls -1 target/accessible-nav-backend-*.jar | head -n 1)"
+          java -jar "$HEAD_JAR" --server.port=18081 --spring.profiles.active=test > ../head-openapi.log 2>&1 &
+          HEAD_PID=$!
+          popd
+
+          for i in $(seq 1 90); do
+            if curl -fsS "http://localhost:18081/v3/api-docs" -o "$NEW_SPEC"; then
+              break
+            fi
+            sleep 1
+          done
+          test -s "$NEW_SPEC"
+          kill "$HEAD_PID" || true
+
+          # Base spec from PR target SHA
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          git worktree add "$BASE_DIR" "$BASE_SHA"
+
+          pushd "$BASE_DIR/backend"
+          mvn -s .mvn/settings.xml -DskipTests package -B
+          BASE_JAR="$(ls -1 target/accessible-nav-backend-*.jar | head -n 1)"
+          java -jar "$BASE_JAR" --server.port=18082 --spring.profiles.active=test > "$RUNNER_TEMP/base-openapi.log" 2>&1 &
+          BASE_PID=$!
+          popd
+
+          for i in $(seq 1 90); do
+            if curl -fsS "http://localhost:18082/v3/api-docs" -o "$OLD_SPEC"; then
+              break
+            fi
+            sleep 1
+          done
+          test -s "$OLD_SPEC"
+          kill "$BASE_PID" || true
+
+          node scripts/openapi/check-breaking.mjs --old "$OLD_SPEC" --new "$NEW_SPEC" --report "$REPORT_MD"
+
+          echo "## OpenAPI Breaking Gate" >> "$GITHUB_STEP_SUMMARY"
+          cat "$REPORT_MD" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload OpenAPI Breaking Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: openapi-breaking-report
+          path: ${{ runner.temp }}/openapi-breaking-report.md
+          retention-days: 7
+
+      - name: PR notify OpenAPI contract result
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        env:
+          REPORT_PATH: ${{ runner.temp }}/openapi-breaking-report.md
+        with:
+          script: |
+            const fs = require('fs')
+            const reportPath = process.env.REPORT_PATH
+            let body = 'OpenAPI contract report not found.'
+            if (fs.existsSync(reportPath)) {
+              body = fs.readFileSync(reportPath, 'utf8')
+            }
+            const marker = '<!-- openapi-contract-report -->'
+            const commentBody = `${marker}\n## OpenAPI Contract Gate\n\n${body}`
+            const { owner, repo } = context.repo
+            const issue_number = context.payload.pull_request.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: commentBody,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody,
+              })
+            }
+
+  flyway-policy:
+    name: Flyway Migration Policy
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate migration policy
+        run: node scripts/flyway/check-migration-policy.mjs
+
+      - name: Publish migration policy summary
+        run: |
+          echo "## Flyway Migration Policy" >> "$GITHUB_STEP_SUMMARY"
+          cat .run/flyway-policy-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Flyway Policy Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flyway-policy-report
+          path: .run/flyway-policy-report.md
+          retention-days: 7
+
+  # Frontend Build and Test
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate OpenAPI types (api:gen)
+        run: |
+          set -euo pipefail
+
+          # Build & run backend (H2/test profile) so frontend can generate types from /v3/api-docs.
+          pushd ../backend
+          mvn -s .mvn/settings.xml -DskipTests package -B
+          JAR="$(ls -1 target/accessible-nav-backend-*.jar | head -n 1)"
+          java -jar "$JAR" --server.port=8081 --spring.profiles.active=test > ../backend-openapi.log 2>&1 &
+          BACKEND_PID=$!
+          popd
+
+          cleanup() {
+            kill "$BACKEND_PID" || true
+          }
+          trap cleanup EXIT
+
+          for i in $(seq 1 60); do
+            if curl -fsS "http://localhost:8081/v3/api-docs" >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          if ! curl -fsS "http://localhost:8081/v3/api-docs" >/dev/null; then
+            echo "Backend did not become ready for OpenAPI generation; tail of backend-openapi.log:"
+            tail -n 200 ../backend-openapi.log || true
+            exit 1
+          fi
+
+          OPENAPI_URL="http://localhost:8081/v3/api-docs" npm run api:gen
+
+          # Ensure generated types are checked-in and up-to-date.
+          git diff --exit-code -- src/api/schema.d.ts
+
+      - name: Verify i18n key parity
+        run: npm run i18n:check
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm run test:coverage
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          retention-days: 7
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Enforce Frontend Bundle Budget
+        run: npm run perf:budget
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  # E2E Tests (optional, runs after both builds succeed)
+  e2e-critical:
+    name: E2E Critical Paths
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run critical navigation E2E
+        run: npm run test:e2e:critical
+        env:
+          CI: true
+
+      - name: Upload E2E Critical Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-critical
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  # E2E Tests (full suite, informational)
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E Tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload E2E Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  # Manual-only: run Navigation Hazard Edge Cases suite.
+  e2e-hazard-edge-manual:
+    name: E2E Hazard Edge Cases (Manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_hazard_edge_only == 'true'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run hazard edge-case E2E suite
+        run: npm run test:e2e:hazard-edge
+        env:
+          CI: true
+
+      - name: Upload E2E Hazard Edge Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-hazard-edge
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  # Security Scan
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [security-policy]
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          trivyignores: '.trivyignore'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          # Custom gate runs after this step so we can provide a clear PR summary.
+          exit-code: '0'
+          ignore-unfixed: true
+
+      - name: Trivy gate + PR summary (HIGH/CRITICAL)
+        run: |
+          set -euo pipefail
+
+          count="$(jq '.runs[0].results | length' trivy-results.sarif)"
+          echo "## Trivy (HIGH/CRITICAL) Gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Findings: **$count**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$count" -gt 0 ]; then
+            echo "### Top findings (ruleId -> count)" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            jq -r '.runs[0].results[].ruleId' trivy-results.sarif | sort | uniq -c | sort -nr | head -n 50 >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Failing because HIGH/CRITICAL vulns were found. Add a temporary allowlist entry (with expiry) only when justified." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  osv:
+    name: OSV Scan (PR - new vulns only)
+    if: github.event_name == 'pull_request'
+    needs: [security-policy]
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.3.2"
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+      security-events: write
+
+  # Single required check for branch protection.
+  # Configure GitHub branch protection to require only "Merge Gate",
+  # then this job enforces all sub-checks deterministically.
+  merge-gate:
+    name: Merge Gate
+    if: always() && (github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true')
+    runs-on: ubuntu-latest
+    needs:
+      - security-policy
+      - backend
+      - api-contract
+      - flyway-policy
+      - frontend
+      - e2e-critical
+      - e2e
+      - security
+      - osv
+    steps:
+      - name: Evaluate required checks
+        env:
+          SECURITY_POLICY_RESULT: ${{ needs.security-policy.result }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          API_CONTRACT_RESULT: ${{ needs.api-contract.result }}
+          FLYWAY_POLICY_RESULT: ${{ needs.flyway-policy.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          E2E_CRITICAL_RESULT: ${{ needs.e2e-critical.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+          OSV_RESULT: ${{ needs.osv.result }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          echo "Required checks summary:"
+          echo "- security-policy: $SECURITY_POLICY_RESULT"
+          echo "- backend: $BACKEND_RESULT"
+          echo "- api-contract: $API_CONTRACT_RESULT"
+          echo "- flyway-policy: $FLYWAY_POLICY_RESULT"
+          echo "- frontend (lint + unit + build + openapi types diff): $FRONTEND_RESULT"
+          echo "- e2e-critical: $E2E_CRITICAL_RESULT"
+          echo "- security: $SECURITY_RESULT"
+          echo "- e2e: $E2E_RESULT"
+          echo "- osv: $OSV_RESULT"
+
+          fail=0
+          require_success() {
+            local name="$1"
+            local value="$2"
+            if [ "$value" != "success" ]; then
+              echo "::error::required check '$name' is '$value' (expected success)"
+              fail=1
+            fi
+          }
+
+          require_success "security-policy" "$SECURITY_POLICY_RESULT"
+          require_success "backend" "$BACKEND_RESULT"
+          require_success "flyway-policy" "$FLYWAY_POLICY_RESULT"
+          require_success "frontend" "$FRONTEND_RESULT"
+          require_success "security" "$SECURITY_RESULT"
+
+          # PR must pass E2E + OSV; push pipelines may skip these jobs by design.
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            require_success "api-contract" "$API_CONTRACT_RESULT"
+            require_success "e2e-critical" "$E2E_CRITICAL_RESULT"
+            require_success "e2e" "$E2E_RESULT"
+            require_success "osv" "$OSV_RESULT"
+          else
+            if [ "$API_CONTRACT_RESULT" != "success" ] && [ "$API_CONTRACT_RESULT" != "skipped" ]; then
+              echo "::error::api-contract check is '$API_CONTRACT_RESULT' (expected success or skipped)"
+              fail=1
+            fi
+            if [ "$E2E_RESULT" != "success" ] && [ "$E2E_RESULT" != "skipped" ]; then
+              echo "::error::e2e check is '$E2E_RESULT' (expected success or skipped)"
+              fail=1
+            fi
+            if [ "$E2E_CRITICAL_RESULT" != "success" ] && [ "$E2E_CRITICAL_RESULT" != "skipped" ]; then
+              echo "::error::e2e-critical check is '$E2E_CRITICAL_RESULT' (expected success or skipped)"
+              fail=1
+            fi
+            if [ "$OSV_RESULT" != "success" ] && [ "$OSV_RESULT" != "skipped" ]; then
+              echo "::error::osv check is '$OSV_RESULT' (expected success or skipped)"
+              fail=1
+            fi
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "Merge gate failed."
+            exit 1
+          fi
+
+          echo "Merge gate passed."

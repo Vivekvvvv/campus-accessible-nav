@@ -1,0 +1,21 @@
+# 数据库自动备份 - Cron 任务配置
+#
+# 将此文件复制到 /etc/cron.d/accessible-nav-backup
+# 或使用 crontab -e 添加以下任务
+
+# 环境变量 (根据实际情况修改)
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=accessible_nav
+DB_USER=postgres
+PGPASSWORD=your_password_here
+BACKUP_DIR=/var/backups/accessible-nav
+BACKUP_RETENTION_DAYS=30
+
+# 每天凌晨2点执行全量备份
+0 2 * * * root /path/to/scripts/backup.sh full $BACKUP_DIR >> /var/log/accessible-nav-backup.log 2>&1
+
+# 可选: 每周日凌晨3点执行额外的备份并同步到远程存储
+# 0 3 * * 0 root /path/to/scripts/backup.sh full $BACKUP_DIR && aws s3 sync $BACKUP_DIR s3://your-bucket/backups/ >> /var/log/accessible-nav-backup.log 2>&1
