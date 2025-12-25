@@ -1,0 +1,6 @@
+strategy: index_only
+backward_compatible: true
+owner: backend-obstacle
+rollout: add partial unique/index for effect history dedupe and lookup
+rollback: drop added indexes
+compat_window: one release

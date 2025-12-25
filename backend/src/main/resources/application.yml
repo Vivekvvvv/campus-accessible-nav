@@ -1,0 +1,168 @@
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  datasource:
+    # Support both standard Spring env vars and the project's DB_* vars for backward compatibility.
+    # Preferred (explicit): SPRING_DATASOURCE_URL / DB_URL
+    # Also supported (composed): DB_HOST/DB_PORT/DB_NAME/DB_SCHEMA and POSTGRES_* (compose-friendly).
+    url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:${POSTGRES_PORT:5432}}/${DB_NAME:${POSTGRES_DB:accessible_nav}}?currentSchema=${DB_SCHEMA:public}}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:${DB_USER:${POSTGRES_USER:postgres}}}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:${POSTGRES_PASSWORD:postgres}}}
+    driver-class-name: org.postgresql.Driver
+    # HikariCP 连接池配置
+    hikari:
+      pool-name: HikariPool-AccessibleNav
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT:300000}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT:20000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME:1200000}
+      leak-detection-threshold: ${DB_POOL_LEAK_DETECTION:60000}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # Hibernate 6 (Spring Boot 3) removed the old PostgisDialect class; use PG10+ PostGIS dialect by default.
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect}
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+  # Redis 配置 (分布式缓存)
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: ${REDIS_TIMEOUT:3000ms}
+    lettuce:
+      pool:
+        max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+        max-idle: ${REDIS_POOL_MAX_IDLE:8}
+        min-idle: ${REDIS_POOL_MIN_IDLE:2}
+        max-wait: ${REDIS_POOL_MAX_WAIT:-1ms}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5200,http://127.0.0.1:5200}
+  bootstrap:
+    # 可选：启动时若库为空则自动导入图数据（GraphImportRequest JSON）
+    # 示例：../data/gbuc-jianggao/graph-import.json
+    graph-import-path: ${GRAPH_IMPORT_PATH:}
+  security:
+    actuator:
+      # Dev 默认放开，便于 Prometheus 抓取；生产建议设为 false 并通过网络/认证限制访问。
+      prometheus-public: ${ACTUATOR_PROMETHEUS_PUBLIC:true}
+    admin:
+      username: ${ADMIN_USERNAME:admin}
+      password: ${ADMIN_PASSWORD:admin123}
+    jwt:
+      secret: ${JWT_SECRET:dev-secret-change-me-please-32-chars}
+      expiration-minutes: ${JWT_EXPIRE_MINUTES:15}
+      refresh-expiration-minutes: ${JWT_REFRESH_EXPIRE_MINUTES:10080}
+    # API 速率限制配置
+    rate-limit:
+      enabled: ${RATE_LIMIT_ENABLED:true}
+      max-requests: ${RATE_LIMIT_MAX_REQUESTS:100}
+      window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:60}
+      use-redis: ${RATE_LIMIT_USE_REDIS:false}
+  routing:
+    max-snap-meters: ${ROUTING_MAX_SNAP_METERS:5000}
+    # Use PostGIS KNN (geog GIST + <->) for snapping when available.
+    use-postgis-knn: ${ROUTING_USE_POSTGIS_KNN:true}
+    passability:
+      penalty-enabled: ${ROUTING_PASSABILITY_PENALTY_ENABLED:true}
+      min-clamp: ${ROUTING_PASSABILITY_MIN_CLAMP:0.01}
+      weight-factor: ${ROUTING_PASSABILITY_WEIGHT_FACTOR:1.0}
+  navigation:
+    housekeeping:
+      enabled: ${NAV_HOUSEKEEPING_ENABLED:true}
+      # End ACTIVE/PAUSED sessions if no location updates arrive for this long.
+      stale-location: ${NAV_SESSION_STALE_LOCATION:10m}
+      # Absolute max session duration (safety net).
+      max-duration: ${NAV_SESSION_MAX_DURATION:4h}
+      # Sweep interval (ms). @Scheduled fixedDelay uses milliseconds.
+      fixed-delay-ms: ${NAV_SESSION_SWEEP_DELAY_MS:60000}
+      batch-size: ${NAV_SESSION_SWEEP_BATCH:200}
+  obstacle:
+    dedupe:
+      enabled: ${OBSTACLE_DEDUPE_ENABLED:true}
+  campus:
+    # minLat,minLng,maxLat,maxLng (WGS84)
+    bbox: ${CAMPUS_BBOX:23.2732730,113.1995461,23.2766018,113.2050374}
+
+# 路由缓存配置 (两级缓存: L1=Caffeine本地缓存, L2=Redis分布式缓存)
+route:
+  cache:
+    # Redis分布式缓存配置
+    redis:
+      enabled: ${ROUTE_CACHE_REDIS_ENABLED:false}
+      expire-minutes: ${ROUTE_CACHE_REDIS_EXPIRE_MINUTES:30}
+      key-prefix: ${ROUTE_CACHE_REDIS_KEY_PREFIX:route:}
+    # Caffeine本地缓存配置 (L1)
+    exact:
+      max-size: ${ROUTE_CACHE_EXACT_MAX_SIZE:10000}
+      expire-minutes: ${ROUTE_CACHE_EXACT_EXPIRE_MINUTES:30}
+    grid:
+      max-size: ${ROUTE_CACHE_GRID_MAX_SIZE:50000}
+      expire-minutes: ${ROUTE_CACHE_GRID_EXPIRE_MINUTES:120}
+      size-meters: ${ROUTE_CACHE_GRID_SIZE_METERS:50}
+
+file:
+  upload:
+    dir: ${FILE_UPLOAD_DIR:./uploads}
+    url-prefix: ${FILE_UPLOAD_URL_PREFIX:/uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,prometheus,metrics,caches,env}
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS:never}
+      show-components: always
+    metrics:
+      enabled: true
+    caches:
+      enabled: true
+  metrics:
+    tags:
+      application: accessible-nav-backend
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.75, 0.95, 0.99
+      slo:
+        http.server.requests: 50ms, 100ms, 200ms, 500ms, 1s
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# OpenAPI/Swagger配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: false
+  packages-to-scan: com.demo.accessiblenav

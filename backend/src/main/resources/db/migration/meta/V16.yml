@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-navigation
+rollout: extend voice reminder policy fields
+rollback: keep new columns nullable/defaulted and disable usage on app side
+compat_window: two releases

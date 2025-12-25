@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-obstacle
+rollout: introduce obstacle-loop-v2 tables/columns without destructive changes
+rollback: remove v2 objects after data export
+compat_window: one release

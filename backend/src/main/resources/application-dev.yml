@@ -1,0 +1,31 @@
+# Dev profile: local development defaults backed by PostgreSQL + PostGIS.
+#
+# Enable via:
+#   SPRING_PROFILES_ACTIVE=dev
+#
+# Notes:
+# - Keeps OpenAPI enabled and actuator Prometheus public for local diagnostics.
+# - Uses in-memory/local rate limit (no Redis dependency in local dev).
+
+app:
+  security:
+    actuator:
+      prometheus-public: true
+    rate-limit:
+      enabled: true
+      use-redis: false
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,prometheus,metrics,caches,env}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

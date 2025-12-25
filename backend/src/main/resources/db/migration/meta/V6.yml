@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-navigation
+rollout: create voice settings table and keep defaults backward compatible
+rollback: drop voice settings table if feature disabled
+compat_window: one release

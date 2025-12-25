@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-security
+rollout: add operation log role columns/tables without dropping old fields
+rollback: drop newly added objects if no data dependency
+compat_window: one release

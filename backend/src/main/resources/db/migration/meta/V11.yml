@@ -1,0 +1,7 @@
+strategy: contract
+backward_compatible: false
+owner: backend-navigation
+paired_expand: V6
+rollout: voice-settings numeric type migration after compatibility verification
+rollback: backup restore + previous app rollback
+compat_window: two releases

@@ -1,0 +1,7 @@
+-- V11: Align voice settings numeric columns with JPA mapping (Double -> float8).
+
+ALTER TABLE IF EXISTS t_voice_settings
+  ALTER COLUMN rate TYPE DOUBLE PRECISION USING rate::DOUBLE PRECISION,
+  ALTER COLUMN pitch TYPE DOUBLE PRECISION USING pitch::DOUBLE PRECISION,
+  ALTER COLUMN volume TYPE DOUBLE PRECISION USING volume::DOUBLE PRECISION;
+

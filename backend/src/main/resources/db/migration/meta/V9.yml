@@ -1,0 +1,7 @@
+strategy: contract
+backward_compatible: false
+owner: backend-emergency
+paired_expand: V5
+rollout: numeric-to-double precision type change after application readiness check
+rollback: restore from backup or dual-write rollback script
+compat_window: two releases

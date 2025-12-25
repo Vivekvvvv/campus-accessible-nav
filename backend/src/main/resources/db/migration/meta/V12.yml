@@ -1,0 +1,6 @@
+strategy: index_only
+backward_compatible: true
+owner: backend-geo
+rollout: create geog gist knn index to accelerate spatial snapping
+rollback: drop knn index
+compat_window: one release

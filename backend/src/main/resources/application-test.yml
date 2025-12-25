@@ -1,0 +1,38 @@
+# Test profile: keep unit/integration (non-Postgres) tests self-contained.
+#
+# Enable via:
+#   SPRING_PROFILES_ACTIVE=test mvn test
+#
+# Notes:
+# - Uses in-memory H2; Flyway is disabled; Hibernate creates schema automatically.
+# - PostGIS-specific logic is covered by the real Postgres IT suite (-Pit verify).
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:accessible_nav_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: false
+  flyway:
+    enabled: false
+
+app:
+  security:
+    rate-limit:
+      enabled: false
+  routing:
+    # H2 does not have PostGIS/geog columns; disable KNN snapping.
+    use-postgis-knn: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

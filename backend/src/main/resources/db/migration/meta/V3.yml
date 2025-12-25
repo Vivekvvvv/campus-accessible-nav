@@ -1,0 +1,6 @@
+strategy: index_only
+backward_compatible: true
+owner: backend-routing
+rollout: create performance indexes online where possible
+rollback: drop created indexes
+compat_window: one release

@@ -1,0 +1,7 @@
+strategy: contract
+backward_compatible: false
+owner: backend-geo
+paired_expand: V5
+rollout: lat/lng numeric-to-double precision after read path is dual-compatible
+rollback: restore from backup and redeploy previous app
+compat_window: two releases

@@ -1,0 +1,6 @@
+strategy: init
+backward_compatible: true
+owner: backend-platform
+rollout: bootstrap schema + postgis extension
+rollback: restore from pre-init backup only
+compat_window: n/a

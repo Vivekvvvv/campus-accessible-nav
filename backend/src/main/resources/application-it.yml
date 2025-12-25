@@ -1,0 +1,30 @@
+# IT profile: real PostgreSQL/PostGIS regression tests.
+#
+# Enable via:
+#   mvn -Pit verify
+#
+# Notes:
+# - Datasource/Flyway/JPA schema properties are injected dynamically by PostgresITBase.
+# - Disable API rate limiting in IT to remove non-functional test noise.
+
+app:
+  security:
+    actuator:
+      prometheus-public: true
+    rate-limit:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

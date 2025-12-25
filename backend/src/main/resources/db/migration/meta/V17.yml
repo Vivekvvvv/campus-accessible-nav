@@ -1,0 +1,7 @@
+strategy: expand
+backward_compatible: true
+owner: backend-navigation
+rollout: add resume token for navigation session restore
+rollback: keep nullable resume_token column and disable resume-token API route
+compat_window: two releases
+

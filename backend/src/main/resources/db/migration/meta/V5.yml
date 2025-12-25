@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-emergency
+rollout: create emergency domain tables and nullable columns
+rollback: remove emergency tables if no dependent release
+compat_window: one release

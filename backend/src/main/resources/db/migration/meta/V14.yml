@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-profile
+rollout: add user accessibility profile table and profile API defaults
+rollback: drop t_accessibility_profile if feature is disabled
+compat_window: one release

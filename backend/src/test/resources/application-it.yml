@@ -1,0 +1,48 @@
+server:
+  port: 0
+
+spring:
+  # Datasource is provided by PostgresITBase via DynamicPropertySource (external PostgreSQL/PostGIS).
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    clean-disabled: false
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+app:
+  graph:
+    seed-path: disabled
+  cors:
+    allowed-origins: http://localhost:5173
+  bootstrap:
+    graph-import-path:
+  security:
+    actuator:
+      prometheus-public: false
+    admin:
+      username: admin
+      password: admin123
+    jwt:
+      # >= 32 chars for HS256
+      secret: test-secret-key-for-integration-testing-32chars
+      expiration-minutes: 15
+      refresh-expiration-minutes: 60
+  routing:
+    max-snap-meters: 5000
+  campus:
+    bbox: 23.2732730,113.1995461,23.2766018,113.2050374
+
+file:
+  upload:
+    dir: ./test-uploads
+    url-prefix: /uploads
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,41 @@
+# Local/dev profile: in-memory H2 DB so the app can run without Postgres.
+#
+# Usage:
+#   SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run
+#
+# Notes:
+# - Flyway is disabled; Hibernate creates schema automatically (create-drop).
+# - This profile is intended for local demos, Playwright E2E, and quick smoke tests.
+
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:accessible_nav;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: false
+  flyway:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+app:
+  security:
+    rate-limit:
+      enabled: false
+  routing:
+    # H2 profile does not have PostGIS/geog columns; disable KNN snapping.
+    use-postgis-knn: false
