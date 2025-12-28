@@ -1,0 +1,357 @@
+# Prometheus alert rules for Accessible Nav (backend + routing + obstacle loop)
+groups:
+  - name: accessible-navigation
+    rules:
+      - alert: BackendServiceDown
+        expr: up{job="accessible-nav-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is down"
+          description: "Prometheus cannot scrape accessible-nav-backend for more than 1 minute."
+
+      # Routing compute latency (cache-miss path)
+      - alert: HighRouteLatency
+        expr: histogram_quantile(0.95, rate(route_calculation_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High route compute latency"
+          description: "route.calculation.duration p95 > 2s (current={{ $value }}s) for 5m."
+
+      # Routing failure ratio (business failures + invalid inputs)
+      - alert: HighRouteFailureRatio
+        expr: sum(rate(route_requests_total{result="failure"}[5m])) / sum(rate(route_requests_total[5m])) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High route failure ratio"
+          description: "Route failure ratio > 2% over 5m (current={{ $value | humanizePercentage }})."
+
+      # SLO binding: route availability fast-burn
+      - alert: SLOAvailabilityFastBurn
+        expr: (sum(rate(route_requests_total{result="success"}[5m])) / clamp_min(sum(rate(route_requests_total[5m])), 1e-9)) < 0.98
+        for: 5m
+        labels:
+          severity: critical
+          slo: route_availability
+        annotations:
+          summary: "SLO fast burn: route availability"
+          description: "Route availability < 98% over 5m (current={{ $value | humanizePercentage }})."
+
+      # SLO binding: HTTP 5xx ratio fast-burn
+      - alert: SLOHttp5xxFastBurn
+        expr: (sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1e-9)) > 0.02
+        for: 5m
+        labels:
+          severity: critical
+          slo: http_reliability
+        annotations:
+          summary: "SLO fast burn: HTTP 5xx ratio"
+          description: "HTTP 5xx ratio > 2% over 5m (current={{ $value | humanizePercentage }})."
+
+      # SLO binding: route p95 latency fast-burn
+      - alert: SLORouteP95FastBurn
+        expr: histogram_quantile(0.95, sum(rate(route_calculation_duration_seconds_bucket[5m])) by (le)) > 1.5
+        for: 5m
+        labels:
+          severity: critical
+          slo: route_latency
+        annotations:
+          summary: "SLO fast burn: route p95 latency"
+          description: "Route p95 latency > 1.5s over 5m (current={{ $value }}s)."
+
+      # Error budget burn rates (route availability SLO=98% => budget=2%).
+      - alert: SLORouteErrorBudgetFastBurn
+        expr: (1 - (sum(rate(route_requests_total{result="success"}[5m])) / clamp_min(sum(rate(route_requests_total[5m])), 1e-9))) / 0.02 > 2
+        for: 5m
+        labels:
+          severity: critical
+          slo: route_availability
+        annotations:
+          summary: "SLO fast burn: route error budget"
+          description: "Route error budget burn rate > 2x over 5m (current={{ $value }}x)."
+
+      - alert: SLORouteErrorBudgetSlowBurn
+        expr: (1 - (sum(rate(route_requests_total{result="success"}[1h])) / clamp_min(sum(rate(route_requests_total[1h])), 1e-9))) / 0.02 > 1
+        for: 30m
+        labels:
+          severity: warning
+          slo: route_availability
+        annotations:
+          summary: "SLO slow burn: route error budget"
+          description: "Route error budget burn rate > 1x over 1h for 30m (current={{ $value }}x)."
+
+      # Navigation session: reroute spike per active session.
+      # Calibrated baseline: reroute cooldown is 20s on client, so sustained >0.08/s/session is abnormal.
+      - alert: NavigationRerouteSpike
+        expr: navigation_sessions_active > 0 and (sum(rate(navigation_reroutes_total[5m])) / clamp_min(navigation_sessions_active, 1) > 0.08)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation reroute spike"
+          description: "navigation.reroutes per active session > 0.08/s for 10m (current={{ $value }})."
+
+      # Navigation hazards: client polling too fast (expected ~1 query / 15s / active session ~= 0.067/s).
+      - alert: NavigationHazardQueriesHighPerSession
+        expr: navigation_sessions_active > 0 and (sum(rate(navigation_hazards_queries_total[5m])) / clamp_min(navigation_sessions_active, 1) > 0.10)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation hazards query rate high per session"
+          description: "Hazards queries per active session > 0.10/s for 10m (expected ~0.067/s). Current={{ $value }}."
+
+      # Navigation hazards: too many matches per query (often means overly-wide bbox/radius or dense disabled effects)
+      - alert: NavigationHazardsAvgMatchedHigh
+        expr: sum(rate(navigation_hazards_matched_total[30m])) / clamp_min(sum(rate(navigation_hazards_queries_total[30m])), 1e-9) > 12
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation hazards matched/query high"
+          description: "Avg hazards matched per query > 12 for 30m (current={{ $value }})."
+
+      # Navigation session: obstacle-driven reroutes dominate all reroutes.
+      - alert: NavigationObstacleRerouteSpike
+        expr: sum(rate(navigation_reroutes_total[5m])) > 0.2 and (sum(rate(navigation_reroutes_total{reason="OBSTACLE"}[5m])) / clamp_min(sum(rate(navigation_reroutes_total[5m])), 1e-9) > 0.60)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation obstacle reroute spike"
+          description: "OBSTACLE reroute share > 60% for 10m while total reroute rate > 0.2/s (current={{ $value }})."
+
+      # Navigation client event: OFF_ROUTE warnings too frequent per location update.
+      - alert: NavigationOffRouteWarnRatioHigh
+        expr: navigation_sessions_active > 0 and (sum(rate(navigation_client_events_total{type="OFF_ROUTE_WARNED"}[10m])) / clamp_min(sum(rate(navigation_location_updates_total[10m])), 1e-9) > 0.08)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation off-route warnings are too frequent"
+          description: "OFF_ROUTE_WARNED per location update > 8% over 10m (current={{ $value }})."
+
+      # Navigation session: active sessions unusually high
+      - alert: NavigationActiveSessionsHigh
+        expr: navigation_sessions_active > 200
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation active sessions high"
+          description: "navigation.sessions.active > 200 for 10m (current={{ $value }})."
+
+      # Navigation session: duration p95 too high (ended sessions)
+      - alert: NavigationSessionDurationP95High
+        expr: histogram_quantile(0.95, sum(rate(navigation_session_duration_seconds_bucket[30m])) by (le)) > 7200
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation session duration p95 high"
+          description: "navigation.session.duration p95 > 2h over 30m (current={{ $value }}s)."
+
+      # Navigation session: active but no location updates coming in
+      - alert: NavigationLocationUpdatesMissing
+        expr: navigation_sessions_active > 0 and ((sum(rate(navigation_location_updates_total[5m])) or vector(0)) < 0.1)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation location updates missing"
+          description: "Active navigation sessions exist but location updates are near-zero for 5m."
+
+      # Stage-specific latency (helps pinpoint slow stage)
+      - alert: HighRoutePrimaryStageLatency
+        expr: histogram_quantile(0.95, sum(rate(route_stage_duration_seconds_bucket{stage="primary_route"}[5m])) by (le)) > 1.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High route primary stage latency"
+          description: "route.stage.duration{stage=primary_route} p95 > 1.5s (current={{ $value }}s) for 5m."
+
+      # Cache hit ratio
+      - alert: LowCacheHitRatio
+        expr: route_cache_hit_ratio < 0.3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low route cache hit ratio"
+          description: "route.cache.hit_ratio < 0.30 for 10m (current={{ $value }})."
+
+      # DB pool saturation (Hikari)
+      - alert: DatabaseConnectionPoolExhausted
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.9
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Active/max connections > 90% for 2m (current={{ $value | humanizePercentage }})."
+
+      # JVM heap usage (exported by Micrometer JVM metrics)
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap usage"
+          description: "Heap used/max > 85% for 5m (current={{ $value | humanizePercentage }})."
+
+      # HTTP 5xx ratio
+      - alert: HighErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx ratio"
+          description: "HTTP 5xx ratio > 5% over 5m (current={{ $value | humanizePercentage }})."
+
+      # /api/route 5xx ratio
+      - alert: HighRouteApiErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{uri="/api/route",status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count{uri="/api/route"}[5m])) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High /api/route 5xx ratio"
+          description: "/api/route 5xx ratio > 2% over 5m (current={{ $value | humanizePercentage }})."
+
+      # /api/route p95 latency
+      - alert: HighRouteApiLatency
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri="/api/route"}[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High /api/route latency"
+          description: "/api/route p95 latency > 1s over 5m (current={{ $value }}s)."
+
+      # Obstacle loop: pending backlog
+      - alert: ObstaclePendingBacklogHigh
+        expr: obstacle_reports_pending > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Obstacle pending backlog is high"
+          description: "obstacle_reports_pending > 50 for 10m (current={{ $value }})."
+
+      # Obstacle loop: review latency (p95)
+      - alert: ObstacleReviewLatencyHigh
+        expr: histogram_quantile(0.95, sum(rate(obstacle_review_latency_seconds_bucket[10m])) by (le)) > 1800
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Obstacle review latency is high"
+          description: "obstacle.review.latency p95 > 30min for 30m (current={{ $value }}s)."
+
+      # Obstacle loop: too many active effects
+      - alert: ObstacleActiveEffectsHigh
+        expr: obstacle_effects_active > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many active obstacle effects"
+          description: "obstacle_effects_active > 500 for 10m (current={{ $value }})."
+
+      # Generic HTTP p95 latency
+      - alert: HighHttpLatency
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP latency"
+          description: "HTTP p95 latency > 1s for 5m (current={{ $value }}s)."
+
+      # Disk space low (requires node-exporter)
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Filesystem available < 15% for 5m (current={{ $value | humanizePercentage }})."
+
+      # GC pause avg > 500ms
+      - alert: HighGCTime
+        expr: rate(jvm_gc_pause_seconds_sum[5m]) / rate(jvm_gc_pause_seconds_count[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GC pause time"
+          description: "Average GC pause > 0.5s for 5m (current={{ $value }}s)."
+
+      # Thread pool saturation (Tomcat)
+      - alert: ThreadPoolSaturated
+        expr: tomcat_threads_busy_threads / tomcat_threads_config_max_threads > 0.9
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tomcat thread pool saturated"
+          description: "Busy/max threads > 90% for 2m (current={{ $value | humanizePercentage }})."
+
+      # Navigation voice announcements missing while sessions are active
+      - alert: NavigationVoiceAnnouncementsMissing
+        expr: navigation_sessions_active > 3 and (sum(rate(navigation_client_events_total{type="VOICE_ANNOUNCED"}[10m])) or vector(0)) < 0.01
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation voice announcements missing"
+          description: "Active sessions > 3 but VOICE_ANNOUNCED events near-zero for 15m."
+
+      # Navigation client events dry up while sessions are active
+      - alert: NavigationClientEventsDryUp
+        expr: navigation_sessions_active > 5 and (sum(rate(navigation_client_events_total[10m])) or vector(0)) < 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Navigation client events dry up"
+          description: "Active sessions > 5 but client events near-zero for 10m."
+
+      # Obstacle dedupe ratio too high (may indicate flooding or geo-quantization too coarse)
+      - alert: HighDedupeRatio
+        expr: sum(rate(obstacle_reports_total{event="deduplicated"}[1h])) / clamp_min(sum(rate(obstacle_reports_total{event="created"}[1h])), 1e-9) > 0.5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High obstacle report dedupe ratio"
+          description: "Obstacle dedupe ratio > 50% for 30m (current={{ $value | humanizePercentage }}). May indicate duplicate flooding."
+
+      # Obstacle dedupe unexpectedly disabled (feature-flag drift)
+      - alert: ObstacleDedupingDisabledUnexpectedly
+        expr: max_over_time(obstacle_dedupe_enabled[10m]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Obstacle dedupe is disabled unexpectedly"
+          description: "obstacle.dedupe.enabled stayed 0 for 10m. Check OBSTACLE_DEDUPE_ENABLED and runtime config drift."
+
+      # Review SLA breach rate (too many escalated reports)
+      - alert: ReviewSlaBreachRate
+        expr: sum(rate(obstacle_reports_total{event="escalated"}[1h])) / clamp_min(sum(rate(obstacle_reports_total{event="created"}[1h])), 1e-9) > 0.3
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High review SLA breach rate"
+          description: "More than 30% of reports are being escalated for 30m (current={{ $value | humanizePercentage }})."
