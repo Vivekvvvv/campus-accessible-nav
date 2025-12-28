@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-01-14T06:38:29.443Z",
+  "depcheckSummary": {
+    "dependencies": 0,
+    "devDependencies": 0,
+    "missing": 0
+  },
+  "eslintSummary": {
+    "errorCount": 0,
+    "warningCount": 0,
+    "topRules": []
+  },
+  "unusedFindings": [
+    {
+      "category": "Vue Components (src/components)",
+      "total": 1,
+      "unused": []
+    },
+    {
+      "category": "Composables (src/composables)",
+      "total": 4,
+      "unused": []
+    },
+    {
+      "category": "Utils (src/utils)",
+      "total": 1,
+      "unused": []
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东门入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2049, 23.2751]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西门入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2001, 23.2751]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南门入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2025, 23.2735]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北门入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2025, 23.2765]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图书馆入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.20265, 23.2762]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "体育馆入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.20145, 23.27605]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "行政楼入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2040, 23.27605]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼1入口",
+        "category": "服务点",
+        "amenity": "entrance",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2009, 23.2757]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼1无障碍坡道",
+        "category": "服务点",
+        "highway": "ramp",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.20085, 23.27565]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍1无障碍坡道",
+        "category": "服务点",
+        "highway": "ramp",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.20085, 23.27455]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "食堂1无障碍坡道",
+        "category": "服务点",
+        "highway": "ramp",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2040, 23.27455]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "行政楼无障碍坡道",
+        "category": "服务点",
+        "highway": "ramp",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2040, 23.2761]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼3电梯",
+        "category": "服务点",
+        "amenity": "elevator",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2024, 23.27578]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图书馆电梯",
+        "category": "服务点",
+        "amenity": "elevator",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2026, 23.2763]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "实验楼电梯",
+        "category": "服务点",
+        "amenity": "elevator",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2008, 23.2739]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍3电梯",
+        "category": "服务点",
+        "amenity": "elevator",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.2024, 23.2747]
+      }
+    }
+  ]
+}

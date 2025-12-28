@@ -1,0 +1,320 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼1",
+        "category": "教学楼",
+        "building": "university",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20068, 23.27572],
+            [113.20092, 23.27572],
+            [113.20092, 23.27588],
+            [113.20068, 23.27588],
+            [113.20068, 23.27572]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼2",
+        "category": "教学楼",
+        "building": "university",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20148, 23.27572],
+            [113.20172, 23.27572],
+            [113.20172, 23.27588],
+            [113.20148, 23.27588],
+            [113.20148, 23.27572]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼3",
+        "category": "教学楼",
+        "building": "university",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20228, 23.27572],
+            [113.20252, 23.27572],
+            [113.20252, 23.27588],
+            [113.20228, 23.27588],
+            [113.20228, 23.27572]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼4",
+        "category": "教学楼",
+        "building": "university",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20308, 23.27572],
+            [113.20332, 23.27572],
+            [113.20332, 23.27588],
+            [113.20308, 23.27588],
+            [113.20308, 23.27572]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "教学楼5",
+        "category": "教学楼",
+        "building": "university",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20388, 23.27572],
+            [113.20412, 23.27572],
+            [113.20412, 23.27588],
+            [113.20388, 23.27588],
+            [113.20388, 23.27572]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍1",
+        "category": "宿舍",
+        "building": "dormitory",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20068, 23.27462],
+            [113.20092, 23.27462],
+            [113.20092, 23.27478],
+            [113.20068, 23.27478],
+            [113.20068, 23.27462]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍2",
+        "category": "宿舍",
+        "building": "dormitory",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20148, 23.27462],
+            [113.20172, 23.27462],
+            [113.20172, 23.27478],
+            [113.20148, 23.27478],
+            [113.20148, 23.27462]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍3",
+        "category": "宿舍",
+        "building": "dormitory",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20228, 23.27462],
+            [113.20252, 23.27462],
+            [113.20252, 23.27478],
+            [113.20228, 23.27478],
+            [113.20228, 23.27462]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "宿舍4",
+        "category": "宿舍",
+        "building": "dormitory",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20308, 23.27462],
+            [113.20332, 23.27462],
+            [113.20332, 23.27478],
+            [113.20308, 23.27478],
+            [113.20308, 23.27462]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "食堂1",
+        "category": "食堂",
+        "amenity": "canteen",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20388, 23.27462],
+            [113.20412, 23.27462],
+            [113.20412, 23.27478],
+            [113.20388, 23.27478],
+            [113.20388, 23.27462]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "食堂2",
+        "category": "食堂",
+        "amenity": "canteen",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20288, 23.27382],
+            [113.20312, 23.27382],
+            [113.20312, 23.27398],
+            [113.20288, 23.27398],
+            [113.20288, 23.27382]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "图书馆",
+        "category": "教学楼",
+        "building": "library",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20248, 23.27622],
+            [113.20272, 23.27622],
+            [113.20272, 23.27638],
+            [113.20248, 23.27638],
+            [113.20248, 23.27622]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "体育馆",
+        "category": "服务点",
+        "leisure": "sports_centre",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20128, 23.27612],
+            [113.20152, 23.27612],
+            [113.20152, 23.27628],
+            [113.20128, 23.27628],
+            [113.20128, 23.27612]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "行政楼",
+        "category": "服务点",
+        "office": "administration",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20388, 23.27612],
+            [113.20412, 23.27612],
+            [113.20412, 23.27628],
+            [113.20388, 23.27628],
+            [113.20388, 23.27612]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "实验楼",
+        "category": "教学楼",
+        "building": "laboratory",
+        "source": "manual"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113.20068, 23.27382],
+            [113.20092, 23.27382],
+            [113.20092, 23.27398],
+            [113.20068, 23.27398],
+            [113.20068, 23.27382]
+          ]
+        ]
+      }
+    }
+  ]
+}
