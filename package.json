@@ -1,0 +1,11 @@
+{
+  "name": "accessible-nav-root",
+  "private": true,
+  "description": "Repository root metadata. Frontend dependencies live under ./frontend.",
+  "scripts": {
+    "frontend:lint": "npm --prefix frontend run lint",
+    "frontend:typecheck": "npm --prefix frontend run typecheck",
+    "frontend:test": "npm --prefix frontend run test:coverage",
+    "frontend:build": "npm --prefix frontend run build"
+  }
+}

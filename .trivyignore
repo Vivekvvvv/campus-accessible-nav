@@ -1,0 +1,6 @@
+# Trivy ignore file
+#
+# Use this file to temporarily ignore specific vulnerabilities (CVE IDs) with a clear reason and an expiry date.
+#
+# Example:
+# CVE-2024-12345 # reason: false positive in transitive dep; expires: 2026-03-01; owner: team-x; severity: HIGH; cvss: 7.5; exploitability: LOW; ticket: SEC-1234

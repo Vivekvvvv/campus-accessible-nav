@@ -1,0 +1,14 @@
+# OSV-Scanner configuration (dependency vulnerability scan).
+#
+# This file is used by the GitHub Actions job "osv" (see `.github/workflows/ci.yml`).
+# Keep ignores temporary and accountable: every ignore must have an expiry date.
+#
+# Example:
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = "2026-03-01"
+# reason = "Transitive dev-only dependency; upgrade blocked by <link/ticket>; reassess before expiry."
+# severity = "HIGH"
+# cvss = "7.2"
+# exploitability = "MEDIUM"
+# ticket = "SEC-1234"
