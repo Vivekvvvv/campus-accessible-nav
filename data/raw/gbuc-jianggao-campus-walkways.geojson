@@ -1,0 +1,190 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-1",
+        "name": "Main Walkway A",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2009, 23.2751],
+          [113.2027, 23.2751],
+          [113.2046, 23.2751]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-2",
+        "name": "Main Walkway B",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2025, 23.2740],
+          [113.2025, 23.2755],
+          [113.2025, 23.2764]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-3",
+        "name": "Connector Walkway",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2013, 23.2744],
+          [113.2032, 23.2758],
+          [113.2041, 23.2762]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-4",
+        "name": "North Loop",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2004, 23.2760],
+          [113.2026, 23.2760],
+          [113.2048, 23.2760]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-5",
+        "name": "South Loop",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2004, 23.2741],
+          [113.2026, 23.2741],
+          [113.2048, 23.2741]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-6",
+        "name": "West Loop",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2004, 23.2741],
+          [113.2004, 23.2751],
+          [113.2004, 23.2760]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-7",
+        "name": "East Loop",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2048, 23.2741],
+          [113.2048, 23.2751],
+          [113.2048, 23.2760]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-8",
+        "name": "Inner Connector A",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2009, 23.2757],
+          [113.2024, 23.2757],
+          [113.2042, 23.2757]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-9",
+        "name": "Inner Connector B",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2012, 23.2746],
+          [113.2025, 23.2753],
+          [113.2038, 23.2760]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-10",
+        "name": "East Gate Link",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2048, 23.2751],
+          [113.2050, 23.2751]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "campus-walkway-11",
+        "name": "South Spur",
+        "highway": "footway",
+        "surface": "paved"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [113.2022, 23.2741],
+          [113.2022, 23.2736]
+        ]
+      }
+    }
+  ]
+}
