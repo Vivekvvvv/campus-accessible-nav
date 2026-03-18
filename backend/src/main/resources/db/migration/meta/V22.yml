@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-obstacle
+rollout: add escalation flags and reviewer assignment fields for report SLA handling
+rollback: keep additive escalation columns and disable SLA escalation logic in the app
+compat_window: one release

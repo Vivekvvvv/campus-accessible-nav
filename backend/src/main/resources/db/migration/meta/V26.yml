@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-routing
+rollout: add edge passability probability with a backward-compatible default of 1.0
+rollback: keep defaulted passability_probability column and disable passability weighting in routing
+compat_window: one release

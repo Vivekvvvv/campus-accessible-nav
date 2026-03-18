@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-obstacle
+rollout: add obstacle dedupe key and confirmation counter for duplicate report aggregation
+rollback: keep new columns nullable/defaulted and disable duplicate-detection flow in the app
+compat_window: one release

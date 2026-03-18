@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-facility
+rollout: add indoor building metadata table and optional node-to-building association
+rollback: drop building metadata objects if indoor navigation release is rolled back before use
+compat_window: one release

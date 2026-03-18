@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-emergency
+rollout: add tenant scoping to emergency entities and create emergency broadcast history storage
+rollback: keep additive tenant columns and drop broadcast history table if the feature is rolled back early
+compat_window: one release

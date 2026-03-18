@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-platform
+rollout: create experiment and assignment tables for tenant-scoped feature experiments
+rollback: drop experiment tables if experimentation remains disabled in the release
+compat_window: one release

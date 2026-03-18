@@ -28,6 +28,13 @@ check_trivyignore() {
   [[ -f "$f" ]] || return 0
 
   local total=0 active=0 soon=0 invalid=0
+  local reason_re='reason:[[:space:]]*[^;]+'
+  local owner_re='owner:[[:space:]]*[^;]+'
+  local severity_re='severity:[[:space:]]*(HIGH|CRITICAL)'
+  local cvss_re='cvss:[[:space:]]*([0-9]+([.][0-9]+)?)'
+  local exploitability_re='exploitability:[[:space:]]*(LOW|MEDIUM|HIGH)'
+  local ticket_re='ticket:[[:space:]]*[^;]+'
+  local expires_re='expires:[[:space:]]*([0-9]{4}-[0-9]{2}-[0-9]{2})'
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="$(trim "$line")"
@@ -45,15 +52,15 @@ check_trivyignore() {
       invalid=$((invalid + 1)); fail=1; continue
     fi
 
-    [[ "$meta" =~ reason:[[:space:]]*[^;]+ ]] || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ owner:[[:space:]]*[^;]+ ]] || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ severity:[[:space:]]*(HIGH|CRITICAL) ]] || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ cvss:[[:space:]]*([0-9]+(\.[0-9]+)?) ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $reason_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $owner_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $severity_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $cvss_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
     local cvss="${BASH_REMATCH[1]}"
     awk -v s="$cvss" 'BEGIN { exit (s >= 0 && s <= 10) ? 0 : 1 }' || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ exploitability:[[:space:]]*(LOW|MEDIUM|HIGH) ]] || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ ticket:[[:space:]]*[^;]+ ]] || { invalid=$((invalid + 1)); fail=1; continue; }
-    [[ "$meta" =~ expires:[[:space:]]*([0-9]{4}-[0-9]{2}-[0-9]{2}) ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $exploitability_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $ticket_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
+    [[ "$meta" =~ $expires_re ]] || { invalid=$((invalid + 1)); fail=1; continue; }
 
     local exp="${BASH_REMATCH[1]}"
     local exp_epoch today_epoch

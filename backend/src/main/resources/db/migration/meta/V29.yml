@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-routing
+rollout: create per-tenant route passability policy table for dynamic routing penalties
+rollback: drop t_route_passability_policy if policy-based routing is disabled before use
+compat_window: one release

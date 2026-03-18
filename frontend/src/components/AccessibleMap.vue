@@ -42,8 +42,6 @@ import {
   buildHistoryPayload,
   buildShareQrSrc,
   buildWaypointPayload,
-  extractRouteSummaryMetrics,
-  formatRouteMetrics,
   isEnvTruthy,
   resolveObstacleSuccessToast,
   resolveRouteModeFromProfile,

@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-emergency
+rollout: add emergency severity and zone support while preserving existing event flows
+rollback: keep additive event columns and drop t_emergency_zone if the rollout is reverted early
+compat_window: one release

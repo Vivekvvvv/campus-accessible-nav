@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-security
+rollout: create API key table and indexes for scoped SDK and open API access
+rollback: drop t_api_key if external API key issuance is disabled before adoption
+compat_window: one release

@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-obstacle
+rollout: add confidence score field for obstacle report ranking and reviewer hints
+rollback: keep nullable confidence_score column and disable confidence-based ordering in the app
+compat_window: one release

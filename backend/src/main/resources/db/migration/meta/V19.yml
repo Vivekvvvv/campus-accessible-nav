@@ -1,0 +1,6 @@
+strategy: expand
+backward_compatible: true
+owner: backend-navigation
+rollout: add waypoint and leg-tracking fields for multi-leg navigation sessions
+rollback: keep additive session columns and disable waypoint-aware session handling in the app
+compat_window: one release
