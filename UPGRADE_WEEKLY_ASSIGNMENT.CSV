@@ -1,0 +1,9 @@
+Week,Assignment,Status,Notes
+1,项目初始化,完成,搭建基础框架
+2,后端API开发,完成,Spring Boot RESTful API
+3,前端页面开发,完成,Vue3组件开发
+4,CI/CD配置,完成,GitHub Actions流水线
+5,监控集成,完成,Prometheus + Grafana
+6,WebSocket通知,完成,实时障碍物通知
+7,Sentry监控,完成,错误追踪与报警
+8,文档完善,完成,README与API文档
