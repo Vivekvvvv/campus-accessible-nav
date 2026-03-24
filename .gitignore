@@ -30,6 +30,7 @@ node_modules/
 # Build outputs
 backend/target/
 frontend/dist/
+frontend/coverage/
 
 # Docker volumes
 .mysql/
