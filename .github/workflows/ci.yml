@@ -16,7 +16,7 @@ on:
 env:
   # Spring Boot 3 baseline in this repo uses Java 21+
   JAVA_VERSION: '21'
-  NODE_VERSION: '18'
+  NODE_VERSION: '22'
 
 jobs:
   security-policy:
@@ -474,15 +474,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@v0.2.0
+        with:
+          cache: true
+          version: 'v0.68.1'
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.1
         with:
+          skip-setup-trivy: true
           scan-type: 'fs'
           scan-ref: '.'
           trivyignores: '.trivyignore'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true
           # Custom gate runs after this step so we can provide a clear PR summary.
           exit-code: '0'
           ignore-unfixed: true
