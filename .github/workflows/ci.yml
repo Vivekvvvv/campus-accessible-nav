@@ -474,29 +474,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Trivy CLI
-        run: |
-          set -euo pipefail
-
-          TRIVY_VERSION="0.68.2"
-          TRIVY_ARCHIVE="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
-          TRIVY_URL="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${TRIVY_ARCHIVE}"
-
-          mkdir -p "$HOME/.local/bin"
-          curl -fsSL "$TRIVY_URL" -o "$RUNNER_TEMP/$TRIVY_ARCHIVE"
-          tar -xzf "$RUNNER_TEMP/$TRIVY_ARCHIVE" -C "$RUNNER_TEMP"
-          install -m 0755 "$RUNNER_TEMP/trivy" "$HOME/.local/bin/trivy"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/trivy" --version
-
       - name: Run Trivy vulnerability scanner
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/trivy-cache"
 
-          trivy fs . \
-            --ignorefile .trivyignore \
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -v "$RUNNER_TEMP/trivy-cache:/root/.cache/" \
+            ghcr.io/aquasecurity/trivy:0.68.2 \
+            fs /workspace \
+            --ignorefile /workspace/.trivyignore \
             --format sarif \
-            --output trivy-results.sarif \
+            --output /workspace/trivy-results.sarif \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
             --scanners vuln
