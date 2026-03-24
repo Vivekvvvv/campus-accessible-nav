@@ -843,7 +843,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list"];
         put?: never;
         post: operations["submit"];
         delete?: never;
@@ -940,7 +940,7 @@ export interface paths {
             cookie?: never;
         };
         /** 列出所有 API Key */
-        get: operations["list_2"];
+        get: operations["list_1"];
         put?: never;
         /** 创建 API Key */
         post: operations["create_2"];
@@ -1362,7 +1362,7 @@ export interface paths {
          * 获取用户列表
          * @description 获取所有注册用户的列表
          */
-        get: operations["list"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2037,9 +2037,9 @@ export interface components {
             pathWithLevel?: components["schemas"]["LevelPoint"][];
             levelTransitions?: components["schemas"]["LevelTransition"][];
             modeDiff?: components["schemas"]["ModeDiff"];
+            /** @description Effective routing policy after applying request/profile/default rules */
             routingPolicy?: components["schemas"]["RoutingPolicy"];
         };
-        /** @description Effective routing policy after applying request/profile/default rules */
         RoutingPolicy: {
             /**
              * @description Whether this request applied user accessibility profile defaults
@@ -2072,6 +2072,7 @@ export interface components {
              * @example WHEELCHAIR
              */
             profileMobilityMode?: string;
+            /** @description Fine-grained route strategy weights */
             strategyWeights?: components["schemas"]["RouteStrategyWeights"];
             /**
              * @description Whether passability dynamic penalty is enabled
@@ -3525,7 +3526,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "*/*": unknown;
                 };
             };
             /** @description 文件格式或大小不符合要求 */
@@ -3534,7 +3535,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "*/*": unknown;
                 };
             };
         };
@@ -3557,7 +3558,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "*/*": unknown;
                 };
             };
             /** @description 文件数量超限或未选择文件 */
@@ -3566,7 +3567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "*/*": unknown;
                 };
             };
         };
@@ -4228,7 +4229,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list: {
         parameters: {
             query?: {
                 status?: string;
@@ -4401,7 +4402,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_1: {
         parameters: {
             query?: {
                 ownerId?: string;
@@ -4419,7 +4420,7 @@ export interface operations {
                 };
                 content: {
                     "*/*": {
-                        [key: string]: Record<string, never>;
+                        [key: string]: unknown;
                     }[];
                 };
             };
@@ -4435,7 +4436,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    [key: string]: Record<string, never>;
+                    [key: string]: unknown;
                 };
             };
         };
@@ -4447,7 +4448,7 @@ export interface operations {
                 };
                 content: {
                     "*/*": {
-                        [key: string]: Record<string, never>;
+                        [key: string]: unknown;
                     };
                 };
             };
@@ -4589,7 +4590,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "image/png": string[];
+                    "image/png": string;
                 };
             };
             /** @description 参数无效 */
@@ -4598,7 +4599,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "image/png": string[];
+                    "image/png": string;
                 };
             };
             /** @description 上游服务不可用 */
@@ -4607,7 +4608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "image/png": string[];
+                    "image/png": string;
                 };
             };
         };
@@ -4826,7 +4827,7 @@ export interface operations {
                 };
                 content: {
                     "*/*": {
-                        [key: string]: Record<string, never>;
+                        [key: string]: unknown;
                     };
                 };
             };
@@ -4993,13 +4994,13 @@ export interface operations {
                 };
                 content: {
                     "*/*": {
-                        [key: string]: Record<string, never>;
+                        [key: string]: unknown;
                     };
                 };
             };
         };
     };
-    list: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -5147,7 +5148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": string[];
+                    "*/*": string;
                 };
             };
         };
