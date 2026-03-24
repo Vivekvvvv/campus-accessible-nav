@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.12</version>
+    <version>3.4.10</version>
     <relativePath/>
   </parent>
 
@@ -24,6 +24,12 @@
     <!-- Lombok must support the JDK used to run Maven/compilation (JDK 21+). -->
     <lombok.version>1.18.42</lombok.version>
     <jacoco.version>0.8.13</jacoco.version>
+    <!-- Override managed versions to clear active Trivy findings without widening unrelated upgrades. -->
+    <tomcat.version>10.1.45</tomcat.version>
+    <jackson-bom.version>2.18.6</jackson-bom.version>
+    <netty.version>4.1.118.Final</netty.version>
+    <springdoc-openapi.version>2.8.0</springdoc-openapi.version>
+    <commons-io.version>2.14.0</commons-io.version>
   </properties>
 
   <dependencies>
@@ -111,7 +117,7 @@
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.5.0</version>
+      <version>${springdoc-openapi.version}</version>
     </dependency>
 
     <dependency>
@@ -154,6 +160,11 @@
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>5.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
     </dependency>
 
     <!-- R-Tree spatial index for performance optimization -->
