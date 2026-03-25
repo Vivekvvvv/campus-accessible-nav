@@ -1,6 +1,6 @@
 # 功能拓展升级 PR 清单（P0/P1/P2）
 
-更新时间：2026-02-07  
+更新时间：2026-03-25
 适用范围：`backend/` + `frontend/` + `monitoring/` + `RUNBOOK.md`
 
 ## 1. 目标与原则
@@ -18,6 +18,16 @@
 - `V3 / P2（4-8 个月）`：平台化与多租户能力。
 
 ## 3. V1（P0）可开发 PR 清单
+
+> 进度备注（2026-03-25）：
+> - PR-01 已落地：用户无障碍偏好档案完整实现（profile 模块 + 前端 SettingsPanel 偏好区块 + 单测/IT）。
+> - PR-02 已落地：路由权重策略完整实现（strategyWeights + route passability policy + 管理接口）。
+> - PR-04 已落地：障碍上报照片上传 + PostGIS KNN 自动反查边已实现。
+> - PR-05 已落地：重复上报检测与合并（DedupeKeyGenerator + CredibilityScorer）已实现。
+> - PR-08 已落地：监控告警核心规则已部署。
+> - PR-03 待收口：语音提醒策略字段已预留（VoiceSettingsEntity），播报节流/夜间静音前端逻辑待完善。
+> - PR-06 待收口：收藏基础 CRUD 已实现，分组 + 常用路线一键发起待补充。
+> - PR-07 待收口：hazard 设计稿已完成（docs/design/nav-hazard-warning.md），后端 API + 前端预警交互待实现。
 
 ## 3.1 PR-01 用户无障碍偏好档案（轮椅/视障/推车）
 
