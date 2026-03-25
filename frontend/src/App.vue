@@ -181,8 +181,10 @@ function logout() {
 </script>
 
 <template>
+  <!-- 应用根组件：全局顶部导航栏 + 路由视图 -->
   <div class="app">
     <nav class="global-nav">
+      <!-- 会话过期警告横幅 -->
       <div
         v-if="showSessionExpiryWarning"
         class="session-warning"
@@ -204,26 +206,36 @@ function logout() {
         </button>
         <button type="button" class="session-warning-action ghost" @click="snoozeSessionExpiryWarning">{{ t('app.sessionExpiringSnooze', { minutes: resolvedExpiryWarningSnoozeMinutes }) }}</button>
       </div>
-      <div class="badge" :title="t('app.creditTooltip')">{{ creditText }}</div>
-      <RouterLink data-testid="top-nav-user" class="nav-link" to="/">{{ t('nav.user') }}</RouterLink>
-      <RouterLink v-if="isAdmin" data-testid="top-nav-admin" class="nav-link" :to="{ name: 'admin' }">{{ t('nav.admin') }}</RouterLink>
-      <RouterLink v-if="!isAuthenticated" data-testid="top-nav-login" class="nav-link" :to="{ name: 'login' }">{{ t('nav.login') }}</RouterLink>
-      <RouterLink
-        v-if="!isAuthenticated"
-        data-testid="top-nav-admin-login"
-        class="nav-link"
-        :to="{ name: 'login', query: { as: 'admin' } }"
-      >
-        {{ t('nav.adminLogin') }}
-      </RouterLink>
-      <RouterLink v-if="!isAuthenticated" data-testid="top-nav-register" class="nav-link" to="/register">{{ t('nav.register') }}</RouterLink>
-      <button v-if="isAuthenticated" data-testid="top-nav-logout" type="button" class="nav-link btn-link" @click="logout">{{ t('nav.logout') }}</button>
+
+      <!-- 积分徽章 -->
+      <div class="credit-badge" :title="t('app.creditTooltip')">
+        <span class="credit-icon">◈</span>
+        {{ creditText }}
+      </div>
+
+      <!-- 导航链接组 -->
+      <div class="nav-links">
+        <RouterLink data-testid="top-nav-user" class="nav-link" to="/">{{ t('nav.user') }}</RouterLink>
+        <RouterLink v-if="isAdmin" data-testid="top-nav-admin" class="nav-link nav-link-admin" :to="{ name: 'admin' }">{{ t('nav.admin') }}</RouterLink>
+        <RouterLink v-if="!isAuthenticated" data-testid="top-nav-login" class="nav-link" :to="{ name: 'login' }">{{ t('nav.login') }}</RouterLink>
+        <RouterLink
+          v-if="!isAuthenticated"
+          data-testid="top-nav-admin-login"
+          class="nav-link"
+          :to="{ name: 'login', query: { as: 'admin' } }"
+        >
+          {{ t('nav.adminLogin') }}
+        </RouterLink>
+        <RouterLink v-if="!isAuthenticated" data-testid="top-nav-register" class="nav-link nav-link-accent" to="/register">{{ t('nav.register') }}</RouterLink>
+        <button v-if="isAuthenticated" data-testid="top-nav-logout" type="button" class="nav-link nav-link-logout" @click="logout">{{ t('nav.logout') }}</button>
+      </div>
     </nav>
     <RouterView />
   </div>
 </template>
 
 <style scoped>
+/* ===== 应用根布局 ===== */
 .app {
   height: 100%;
   width: 100%;
@@ -231,123 +243,187 @@ function logout() {
   padding-top: 48px;
 }
 
+/* ===== 全局顶部导航栏 ===== */
 .global-nav {
   position: fixed;
-  top: 8px;
-  right: 12px;
-  z-index: 6;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+}
+
+/* 深色模式 */
+:root[data-theme="dark"] .global-nav {
+  background: rgba(17, 24, 39, 0.88);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===== 积分徽章 ===== */
+.credit-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(14, 165, 164, 0.08);
+  border: 1px solid rgba(14, 165, 164, 0.2);
+  color: var(--ui-accent, #0ea5a4);
+  font-size: 12px; font-weight: 600;
+  max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex-shrink: 0;
+}
+.credit-icon { font-size: 11px; flex-shrink: 0; }
+
+/* ===== 导航链接组 ===== */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* ===== 导航链接通用 ===== */
+.nav-link {
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  color: var(--ui-muted, #6b7280);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.nav-link:hover {
+  background: rgba(14, 165, 164, 0.07);
+  color: var(--ui-accent, #0ea5a4);
+  border-color: rgba(14, 165, 164, 0.2);
+}
+.nav-link.router-link-active {
+  font-weight: 700;
+  color: var(--ui-accent, #0ea5a4);
+  background: rgba(14, 165, 164, 0.08);
+  border-color: rgba(14, 165, 164, 0.25);
+}
+
+/* 管理员链接：橙色强调 */
+.nav-link-admin {
+  color: #f97316;
+}
+.nav-link-admin:hover {
+  background: rgba(249, 115, 22, 0.08);
+  color: #f97316;
+  border-color: rgba(249, 115, 22, 0.25);
+}
+.nav-link-admin.router-link-active {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.08);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* 注册链接：填充强调 */
+.nav-link-accent {
+  background: var(--ui-accent, #0ea5a4);
+  color: #fff;
+  border-color: var(--ui-accent, #0ea5a4);
+}
+.nav-link-accent:hover {
+  filter: brightness(1.06);
+  color: #fff;
+  background: var(--ui-accent, #0ea5a4);
+  border-color: var(--ui-accent, #0ea5a4);
+}
+
+/* 退出按钮 */
+.nav-link-logout:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* ===== 会话过期警告 ===== */
+.session-warning {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.nav-link {
-  font-size: 12px;
-  text-decoration: none;
-  padding: 4px 8px;
+  padding: 5px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  background: rgba(255, 255, 255, 0.9);
-  color: #111;
-}
-
-.badge {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(255, 255, 255, 0.75);
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  border: 1px solid;
+  flex-shrink: 0;
+  max-width: 480px;
 }
 
-.session-warning {
-  --warning-border: rgba(180, 83, 9, 0.35);
-  --warning-bg: rgba(255, 237, 213, 0.92);
-  --warning-ink: #7c2d12;
-  --warning-button-bg: rgba(255, 255, 255, 0.95);
-  --warning-button-ghost-bg: rgba(255, 237, 213, 0.6);
-  --warning-button-border: rgba(180, 83, 9, 0.45);
-
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--warning-border);
-  background: var(--warning-bg);
-  color: var(--warning-ink);
-  max-width: 360px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.session-warning.level-low {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #92400e;
 }
-
-.session-warning.level-warn {
-  --warning-border: rgba(194, 65, 12, 0.38);
-  --warning-bg: rgba(255, 237, 213, 0.98);
-  --warning-ink: #9a3412;
-  --warning-button-border: rgba(194, 65, 12, 0.48);
+.session-warning.level-medium {
+  background: rgba(249, 115, 22, 0.10);
+  border-color: rgba(249, 115, 22, 0.35);
+  color: #9a3412;
 }
-
+.session-warning.level-high,
 .session-warning.level-critical {
-  --warning-border: rgba(185, 28, 28, 0.42);
-  --warning-bg: rgba(254, 226, 226, 0.96);
-  --warning-ink: #991b1b;
-  --warning-button-bg: rgba(255, 255, 255, 0.98);
-  --warning-button-ghost-bg: rgba(254, 226, 226, 0.68);
-  --warning-button-border: rgba(185, 28, 28, 0.5);
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #991b1b;
 }
-
 .session-warning.pulse-critical {
-  animation: session-warning-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes session-warning-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-    transform: translateZ(0);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
-    transform: translateY(-1px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .session-warning.pulse-critical {
-    animation: none;
-  }
+  animation: warning-pulse 2s ease-in-out infinite;
 }
 
 .session-warning-text {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
 }
 
 .session-warning-action {
-  border: 1px solid var(--warning-button-border);
-  background: var(--warning-button-bg);
-  color: var(--warning-ink);
+  padding: 3px 10px;
   border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
   font-size: 11px;
-  line-height: 1.1;
-  padding: 2px 6px;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.session-warning-action:hover { opacity: 0.8; }
+.session-warning-action.ghost { opacity: 0.7; border-style: dashed; }
+.session-warning-action.ghost:hover { opacity: 1; }
+.session-warning-action.critical-primary {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+.session-warning-action.critical-primary-pulse {
+  animation: session-warning-login-glow 1.2s ease-in-out infinite;
 }
 
 .session-warning-icon {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -358,40 +434,20 @@ function logout() {
   line-height: 1;
 }
 
-.session-warning-action.ghost {
-  background: var(--warning-button-ghost-bg);
-}
-
-.session-warning-action.critical-primary {
-  border-color: rgba(185, 28, 28, 0.7);
-  box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.14);
-}
-
-.session-warning-action.critical-primary-pulse {
-  animation: session-warning-login-glow 1.2s ease-in-out infinite;
+@keyframes warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
 }
 
 @keyframes session-warning-login-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.12);
-  }
-  50% {
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.28);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.12); }
+  50% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.28); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .session-warning-action.critical-primary-pulse {
+  .session-warning-action.critical-primary-pulse,
+  .session-warning.pulse-critical {
     animation: none;
   }
-}
-
-.btn-link {
-  cursor: pointer;
-}
-
-.nav-link.router-link-active {
-  font-weight: 700;
 }
 </style>
