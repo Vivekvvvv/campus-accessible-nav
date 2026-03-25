@@ -1,9 +1,17 @@
 Week,Assignment,Status,Notes
-1,项目初始化,完成,搭建基础框架
-2,后端API开发,完成,Spring Boot RESTful API
-3,前端页面开发,完成,Vue3组件开发
-4,CI/CD配置,完成,GitHub Actions流水线
-5,监控集成,完成,Prometheus + Grafana
-6,WebSocket通知,完成,实时障碍物通知
+1,项目初始化,完成,搭建基础框架与 .gitignore
+2,后端API开发,完成,Spring Boot RESTful API（26 个业务模块）
+3,前端页面开发,完成,Vue3 组件开发（4 页面 + 18 组件 + 11 Store）
+4,CI/CD配置,完成,GitHub Actions 流水线（构建/测试/安全扫描/E2E）
+5,监控集成,完成,Prometheus + Grafana + Alertmanager + Actuator
+6,WebSocket通知,完成,实时障碍物通知与导航事件推送
 7,Sentry监控,完成,错误追踪与报警
-8,文档完善,完成,README与API文档
+8,文档完善,完成,README / 设计文档 / 配置矩阵 / 升级规划
+9,功能升级V2落地,完成,PR-09~PR-13 最小闭环（waypoints / 楼层切换 / 可信度 / SLA / 图回滚）
+10,功能升级V3落地,完成,PR-14~PR-18 最小闭环（多租户 / 开放API / 应急 / 动态权重 / A/B实验）
+11,安全扫描修复,完成,Trivy / OSV 配置修复与依赖升级
+12,UI全面重设计,完成,全部页面与面板组件 UI 重设计
+13,文档与追踪同步,完成,TODO / DEV LOG / CSV / IMPROVEMENT_PLAN 更新
+14,后端测试补齐,待完善,9 个零测试模块待补充单测与集成测试
+15,国际化对齐,待完善,zh-CN / en-US key 差异修复
+16,V1功能收口,待完善,PR-03 / PR-06 / PR-07 剩余功能完善
