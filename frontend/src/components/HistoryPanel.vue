@@ -27,60 +27,68 @@ function handleRemove(item) {
 </script>
 
 <template>
-  <details data-testid="panel-history" class="panel">
-    <summary>{{ t('nav.history') }}</summary>
+  <!-- 历史面板：路线历史记录，支持过滤、复用、删除 -->
+  <details data-testid="panel-history" class="hist-panel">
+    <summary class="panel-summary">
+      <span class="summary-icon">⊘</span>
+      <span class="summary-label">{{ t('nav.history') }}</span>
+      <span class="summary-arrow"></span>
+    </summary>
     <div class="panel-body">
-      <!-- 过滤搜索 -->
-      <input
-        type="text"
-        class="input"
-        :placeholder="t('search.placeholder')"
-        :value="historyStore.filterKeyword"
-        @input="historyStore.setFilterKeyword($event.target.value)"
-      />
+      <!-- 搜索过滤 -->
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          class="search-input"
+          :placeholder="t('search.placeholder')"
+          :value="historyStore.filterKeyword"
+          @input="historyStore.setFilterKeyword($event.target.value)"
+        />
+      </div>
 
       <!-- 历史列表 -->
-      <div v-if="historyStore.filteredHistory.length > 0" class="history-items">
+      <div v-if="historyStore.filteredHistory.length > 0" class="hist-list">
         <div
           v-for="item in historyStore.filteredHistory"
           :key="item.id"
-          class="history-item"
+          class="hist-item"
         >
-          <div class="history-main" @click="handleSelect(item)">
-            <div class="history-route">
-              <span class="history-point start">{{ item.start.name }}</span>
-              <span class="history-arrow">→</span>
-              <span class="history-point end">{{ item.end.name }}</span>
+          <div class="hist-main" @click="handleSelect(item)">
+            <div class="hist-route">
+              <span class="route-point start-point">{{ item.start.name }}</span>
+              <span class="route-arrow">→</span>
+              <span class="route-point end-point">{{ item.end.name }}</span>
             </div>
-            <div class="history-meta">
-              <span class="history-mode">{{ item.mode === 'wheel' ? t('route.wheelchair') : t('route.walk') }}</span>
-              <span class="history-sep">·</span>
+            <div class="hist-meta">
+              <span class="meta-mode">{{ item.mode === 'wheel' ? t('route.wheelchair') : t('route.walk') }}</span>
+              <span class="sep">·</span>
               <span>{{ formatDistance(item.distanceM) }}</span>
-              <span class="history-sep">·</span>
+              <span class="sep">·</span>
               <span>{{ formatDuration(item.durationSec) }}</span>
-              <span class="history-sep">·</span>
-              <span class="history-time">{{ historyStore.formatTime(item.timestamp) }}</span>
+              <span class="sep">·</span>
+              <span class="meta-time">{{ historyStore.formatTime(item.timestamp) }}</span>
             </div>
           </div>
           <button
             type="button"
-            class="btn history-remove"
+            class="remove-btn"
             :title="t('common.delete')"
             @click.stop="handleRemove(item)"
           >
-            ×
+            ✕
           </button>
         </div>
       </div>
 
       <!-- 空状态 -->
-      <div v-else class="history-empty">
+      <div v-else class="hist-empty">
         {{ historyStore.filterKeyword ? t('search.noResults') : t('history.empty') }}
       </div>
 
       <!-- 清空按钮 -->
-      <div v-if="historyStore.historyList.length > 0" class="history-actions">
-        <button type="button" class="btn danger" @click="historyStore.clearHistory">
+      <div v-if="historyStore.historyList.length > 0" class="hist-actions">
+        <button type="button" class="clear-btn" @click="historyStore.clearHistory">
           {{ t('search.clearHistory') }}
         </button>
       </div>
@@ -89,112 +97,149 @@ function handleRemove(item) {
 </template>
 
 <style scoped>
-.history-items {
+.hist-panel {
+  background: var(--ui-card, #fff);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px var(--ui-shadow, rgba(0,0,0,0.10));
+  overflow: hidden;
+  font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+}
+
+.panel-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ui-ink);
+  border-bottom: 1px solid var(--ui-line, #e5e7eb);
+}
+.panel-summary::-webkit-details-marker { display: none; }
+.summary-icon { font-size: 14px; color: var(--ui-accent, #0ea5a4); }
+.summary-label { flex: 1; }
+.summary-arrow {
+  width: 6px; height: 6px;
+  border-right: 2px solid var(--ui-muted, #9ca3af);
+  border-bottom: 2px solid var(--ui-muted, #9ca3af);
+  transform: rotate(45deg); transition: transform 0.2s;
+}
+.hist-panel[open] .summary-arrow { transform: rotate(-135deg); }
+
+.panel-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  padding: 12px 18px;
+  gap: 10px;
 }
 
-.history-item {
+/* ===== 搜索框 ===== */
+.search-wrap {
+  display: flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--ui-line, #e5e7eb);
+  border-radius: 9px;
+  padding: 0 10px;
+  background: var(--ui-bg, #f9fafb);
+  transition: border-color 0.15s;
+}
+.search-wrap:focus-within { border-color: var(--ui-accent, #0ea5a4); }
+.search-icon { font-size: 14px; color: var(--ui-muted, #9ca3af); flex-shrink: 0; }
+.search-input {
+  flex: 1; border: none; outline: none;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 13px; color: var(--ui-ink);
+}
+.search-input::placeholder { color: var(--ui-muted, #9ca3af); }
+
+/* ===== 历史列表 ===== */
+.hist-list { display: flex; flex-direction: column; gap: 6px; }
+
+.hist-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--ui-line);
+  padding: 10px 12px;
+  border: 1px solid var(--ui-line, #e5e7eb);
   border-radius: 10px;
-  background: var(--ui-btn-bg);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  background: var(--ui-bg, #fff);
+  transition: all 0.15s;
+}
+.hist-item:hover {
+  border-color: var(--ui-accent, #0ea5a4);
+  box-shadow: 0 2px 8px var(--ui-shadow, rgba(0,0,0,0.06));
 }
 
-.history-item:hover {
-  background: var(--ui-btn-hover);
-  border-color: var(--ui-accent);
-}
+.hist-main { flex: 1; cursor: pointer; min-width: 0; }
 
-.history-main {
-  flex: 1;
-  cursor: pointer;
-  min-width: 0;
-}
-
-.history-route {
+.hist-route {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ui-ink);
+  margin-bottom: 4px;
 }
-
-.history-point {
-  max-width: 120px;
+.route-point {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 38%;
 }
+.start-point { color: #16a34a; }
+.end-point   { color: #dc2626; }
+.route-arrow { color: var(--ui-muted, #9ca3af); font-size: 12px; flex-shrink: 0; }
 
-.history-point.start {
-  color: #16a34a;
-}
-
-.history-point.end {
-  color: #dc2626;
-}
-
-.history-arrow {
-  color: var(--ui-muted);
-  flex-shrink: 0;
-}
-
-.history-meta {
+.hist-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 3px;
   font-size: 11px;
-  color: var(--ui-muted);
-  margin-top: 4px;
+  color: var(--ui-muted, #9ca3af);
 }
-
-.history-sep {
-  color: var(--ui-line);
-}
-
-.history-mode {
+.meta-mode {
   padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(14, 165, 164, 0.1);
-  color: var(--ui-accent);
+  border-radius: 999px;
+  background: rgba(14,165,164,0.08);
+  color: var(--ui-accent, #0ea5a4);
+  font-weight: 600;
 }
+.sep { opacity: 0.4; }
+.meta-time { opacity: 0.8; }
 
-.history-time {
-  opacity: 0.8;
+.remove-btn {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: var(--ui-line, #e5e7eb);
+  color: var(--ui-muted, #6b7280); font-size: 11px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s;
 }
+.remove-btn:hover { background: rgba(239,68,68,0.15); color: #dc2626; }
 
-.history-remove {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border-radius: 50%;
-  font-size: 14px;
-  line-height: 1;
-  opacity: 0.6;
-}
-
-.history-remove:hover {
-  opacity: 1;
-}
-
-.history-empty {
+/* ===== 空状态 ===== */
+.hist-empty {
   text-align: center;
-  padding: 20px;
-  color: var(--ui-muted);
+  padding: 20px 0;
   font-size: 13px;
+  color: var(--ui-muted, #9ca3af);
 }
 
-.history-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
+/* ===== 清空按钮 ===== */
+.hist-actions { display: flex; justify-content: flex-end; }
+.clear-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(239,68,68,0.25);
+  background: rgba(239,68,68,0.05);
+  color: #dc2626;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
 }
+.clear-btn:hover { background: rgba(239,68,68,0.12); }
 </style>
