@@ -95,317 +95,475 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- 登录页：全屏两栏布局 -->
   <div class="auth-page" :class="{ admin: isAdminLogin }">
-    <div class="auth-shell">
-      <section class="brand">
-        <div class="brand-chip">{{ t('brand.name') }}</div>
-        <h1>{{ t('brand.slogan') }}</h1>
-        <p class="brand-sub">{{ t('brand.campus') }}</p>
-        <div class="brand-grid">
-          <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureRoute') }}</div>
-            <div class="brand-desc">{{ t('brand.featureRouteDesc') }}</div>
+    <!-- 左侧品牌展示区 -->
+    <div class="brand-side">
+      <div class="brand-glow"></div>
+      <div class="brand-content">
+        <div class="brand-logo">
+          <span class="brand-icon">♿</span>
+        </div>
+        <h1 class="brand-name">{{ t('brand.name') }}</h1>
+        <p class="brand-slogan">{{ t('brand.slogan') }}</p>
+        <div class="brand-features">
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('brand.featureRoute') }}</span>
           </div>
-          <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureFavorites') }}</div>
-            <div class="brand-desc">{{ t('brand.featureFavoritesDesc') }}</div>
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('brand.featureFavorites') }}</span>
           </div>
-          <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureReport') }}</div>
-            <div class="brand-desc">{{ t('brand.featureReportDesc') }}</div>
-          </div>
-          <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureMap') }}</div>
-            <div class="brand-desc">{{ t('brand.featureMapDesc') }}</div>
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('obstacle.report') }}</span>
           </div>
         </div>
-        <div class="brand-foot">{{ t('brand.footer') }}</div>
-      </section>
+        <p class="brand-foot">{{ t('brand.loginFoot') }}</p>
+      </div>
+    </div>
 
-      <section class="panel">
-        <div class="panel-tag">{{ isAdminLogin ? t('auth.adminLogin') : t('auth.userLogin') }}</div>
-        <div class="panel-title">{{ isAdminLogin ? t('auth.adminLogin') : t('auth.loginTitle') }}</div>
-        <div class="panel-sub">{{ isAdminLogin ? t('auth.adminLoginHint') : t('auth.userLoginHint') }}</div>
+    <!-- 右侧表单区 -->
+    <div class="form-side">
+      <div class="form-card">
+        <!-- 身份标签 -->
+        <div class="role-badge" :class="isAdminLogin ? 'admin' : 'user'">
+          {{ isAdminLogin ? t('nav.adminLogin') : t('nav.login') }}
+        </div>
 
+        <h2 class="form-title">
+          {{ isAdminLogin ? t('auth.adminWelcome') : t('auth.welcome') }}
+        </h2>
+        <p class="form-sub">
+          {{ isAdminLogin ? t('auth.adminLoginHint') : t('auth.userLoginHint') }}
+        </p>
+
+        <!-- 登录表单 -->
         <form class="form" @submit.prevent="login">
           <div class="field">
-            <label class="label">{{ t('auth.username') }}</label>
+            <label class="field-label">{{ t('auth.username') }}</label>
             <input
               data-testid="login-username"
-              class="input"
+              class="field-input"
               type="text"
               v-model="username"
               autocomplete="username"
               :placeholder="t('auth.usernamePlaceholder')"
               :disabled="loading"
+              @keyup.enter="login"
             />
           </div>
+
           <div class="field">
-            <label class="label">{{ t('auth.password') }}</label>
+            <label class="field-label">{{ t('auth.password') }}</label>
             <input
               data-testid="login-password"
-              class="input"
+              class="field-input"
               type="password"
               v-model="password"
               autocomplete="current-password"
               :placeholder="t('auth.passwordPlaceholder')"
               :disabled="loading"
+              @keyup.enter="login"
             />
           </div>
 
-          <div class="actions">
-            <button data-testid="login-submit" type="submit" class="btn primary" :disabled="loading">
-              {{ loading ? t('auth.loginLoading') : (isAdminLogin ? t('auth.enterAdmin') : t('auth.loginButton')) }}
-            </button>
-            <button
-              v-if="!isAdminLogin"
-              type="button"
-              class="btn ghost"
-              :disabled="loading"
-              @click="$router.push('/register')"
-            >
-              {{ t('auth.createAccount') }}
-            </button>
+          <!-- 错误提示 -->
+          <div v-if="error" class="error-bar">
+            <span class="error-icon">!</span>
+            {{ error }}
           </div>
 
-          <div class="assist">
+          <!-- 操作按钮 -->
+          <div class="form-actions">
             <button
-              v-if="!isAdminLogin"
-              type="button"
-              class="link"
+              data-testid="login-submit"
+              class="btn-primary"
+              type="submit"
               :disabled="loading"
-              @click="router.push({ name: 'login', query: { as: 'admin' } })"
             >
-              {{ t('auth.adminLogin') }}
+              <span v-if="loading" class="btn-spinner"></span>
+              {{ loading ? t('common.loading') : t('nav.login') }}
             </button>
-            <button v-else type="button" class="link" :disabled="loading" @click="router.push('/login')">
-              {{ t('auth.userLogin') }}
-            </button>
+            <RouterLink class="btn-ghost" to="/register">
+              {{ t('nav.register') }}
+            </RouterLink>
           </div>
         </form>
 
-        <div v-if="error" class="info-card status err">{{ error }}</div>
-      </section>
+        <!-- 辅助链接 -->
+        <div class="form-assist">
+          <span class="assist-text">{{ t('auth.noAccount') }}</span>
+          <RouterLink class="assist-link" to="/register">{{ t('nav.register') }}</RouterLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
-
+/* ===== 页面整体布局 ===== */
 .auth-page {
   min-height: 100vh;
   display: flex;
+  background: var(--ui-bg);
+  font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+}
+
+/* ===== 左侧品牌区 ===== */
+.brand-side {
+  position: relative;
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
-  font-family: 'Manrope', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  color: var(--ink);
-  background:
-    radial-gradient(900px 500px at 8% 10%, rgba(14, 165, 164, 0.18), transparent 60%),
-    radial-gradient(900px 480px at 92% 20%, rgba(249, 115, 22, 0.18), transparent 62%),
-    linear-gradient(135deg, #fff7ed 0%, #f0f9ff 55%, #ecfeff 100%);
-  position: relative;
+  background: linear-gradient(135deg, #0c4a4a 0%, #0ea5a4 60%, #14b8a6 100%);
   overflow: hidden;
-  --ink: #0f172a;
-  --muted: #475569;
-  --card: rgba(255, 255, 255, 0.88);
-  --line: rgba(15, 23, 42, 0.12);
-  --accent: #0ea5a4;
-  --accent-2: #f97316;
-  --shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  padding: 48px;
 }
 
-.auth-shell {
-  width: min(1080px, 100%);
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 18px;
+/* 管理员模式：橙色品牌区 */
+.auth-page.admin .brand-side {
+  background: linear-gradient(135deg, #7c2d12 0%, #f97316 60%, #fb923c 100%);
 }
 
-@media (max-width: 920px) {
-  .auth-shell {
-    grid-template-columns: 1fr;
-  }
+/* 背景光晕装饰 */
+.brand-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  top: -100px;
+  right: -100px;
+  pointer-events: none;
 }
 
-.brand {
-  padding: 28px 26px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: var(--shadow);
+.brand-glow::after {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  bottom: -80px;
+  left: -60px;
 }
 
-.brand-chip {
-  display: inline-flex;
+.brand-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  max-width: 380px;
+}
+
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.brand-icon {
+  font-size: 28px;
+}
+
+.brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.brand-slogan {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.feature-item {
+  display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(14, 165, 164, 0.35);
-  background: rgba(14, 165, 164, 0.08);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 14px;
+  opacity: 0.85;
 }
 
-.brand h1 {
-  margin: 14px 0 8px;
-  font-size: 34px;
-  line-height: 1.1;
-}
-
-.brand-sub {
-  margin: 0 0 18px;
-  color: var(--muted);
-}
-
-.brand-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-@media (max-width: 560px) {
-  .brand-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.brand-card {
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 14px;
-  padding: 12px 12px;
-  background: rgba(255, 255, 255, 0.75);
-}
-
-.brand-title {
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.brand-desc {
-  color: var(--muted);
-  font-size: 13px;
+.feature-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
 }
 
 .brand-foot {
-  margin-top: 16px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.panel {
-  padding: 22px 20px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: var(--shadow);
-  align-self: start;
-}
-
-.panel-tag {
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(249, 115, 22, 0.12);
-  border: 1px solid rgba(249, 115, 22, 0.25);
   font-size: 12px;
+  opacity: 0.5;
+  line-height: 1.6;
+}
+
+/* ===== 右侧表单区 ===== */
+.form-side {
+  flex: 0 0 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--ui-bg);
+}
+
+.form-card {
+  width: 100%;
+  max-width: 340px;
+}
+
+/* 身份标签 */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
 }
 
-.panel-title {
-  margin-top: 12px;
-  font-size: 22px;
+.role-badge.user {
+  background: rgba(14, 165, 164, 0.1);
+  color: #0ea5a4;
+  border: 1px solid rgba(14, 165, 164, 0.2);
+}
+
+.role-badge.admin {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.form-title {
+  font-size: 26px;
   font-weight: 800;
+  color: var(--ui-ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
-.panel-sub {
-  margin-top: 8px;
-  color: var(--muted);
+.form-sub {
   font-size: 13px;
+  color: var(--ui-muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
 }
 
+/* 表单字段 */
 .form {
-  margin-top: 16px;
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .field {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.label {
+.field-label {
   font-size: 12px;
   font-weight: 700;
+  color: var(--ui-ink);
+  letter-spacing: 0.02em;
 }
 
-.input {
-  padding: 10px 12px;
-  border: 1px solid rgba(15, 23, 42, 0.16);
+.field-input {
+  padding: 11px 14px;
+  border: 1.5px solid var(--ui-line);
   border-radius: 10px;
   font-size: 14px;
+  color: var(--ui-ink);
+  background: var(--ui-bg);
   outline: none;
-  background: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+.field-input:focus {
+  border-color: #0ea5a4;
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.1);
 }
 
-.btn {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: white;
-  cursor: pointer;
-  font-weight: 700;
+.auth-page.admin .field-input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-
-.btn.ghost {
-  background: rgba(15, 23, 42, 0.04);
-}
-
-.btn:disabled {
-  opacity: 0.6;
+.field-input:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.assist {
-  margin-top: 12px;
-}
-
-.link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--accent);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.info-card.status {
-  margin-top: 14px;
+/* 错误提示 */
+.error-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
   font-size: 13px;
 }
 
-.info-card.status.err {
-  border-color: rgba(220, 38, 38, 0.35);
-  background: rgba(220, 38, 38, 0.08);
-  color: rgb(153, 27, 27);
+.error-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* 操作按钮 */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 11px 16px;
+  background: #0ea5a4;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.auth-page.admin .btn-primary {
+  background: #f97316;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-ghost {
+  padding: 11px 16px;
+  background: var(--ui-btn-bg, #fff);
+  color: var(--ui-ink);
+  border: 1.5px solid var(--ui-line);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-ghost:hover {
+  background: var(--ui-btn-hover, rgba(15,23,42,0.04));
+}
+
+/* 辅助链接 */
+.form-assist {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ui-muted);
+}
+
+.assist-link {
+  color: #0ea5a4;
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.auth-page.admin .assist-link {
+  color: #f97316;
+}
+
+/* ===== 响应式：移动端单栏 ===== */
+@media (max-width: 768px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .brand-side {
+    flex: none;
+    padding: 32px 24px;
+    min-height: 200px;
+  }
+
+  .brand-slogan {
+    font-size: 22px;
+  }
+
+  .form-side {
+    flex: none;
+    padding: 32px 24px;
+  }
+
+  .form-card {
+    max-width: 100%;
+  }
 }
 </style>

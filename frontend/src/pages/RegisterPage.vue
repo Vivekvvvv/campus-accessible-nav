@@ -43,44 +43,59 @@ async function register() {
 </script>
 
 <template>
+  <!-- 注册页：全屏两栏布局，与登录页风格一致 -->
   <div class="auth-page">
-    <div class="auth-shell">
-      <section class="brand">
-        <div class="brand-chip">{{ t('brand.name') }}</div>
-        <h1>{{ t('brand.slogan') }}</h1>
+    <!-- 左侧品牌展示区 -->
+    <div class="brand-side">
+      <div class="brand-glow"></div>
+      <div class="brand-content">
+        <div class="brand-logo">
+          <span class="brand-icon">♿</span>
+        </div>
+        <h1 class="brand-name">{{ t('brand.name') }}</h1>
+        <p class="brand-slogan">{{ t('brand.slogan') }}</p>
         <p class="brand-sub">{{ t('brand.registerSub') }}</p>
+        <!-- 功能特性卡片网格 -->
         <div class="brand-grid">
           <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureRoute') }}</div>
-            <div class="brand-desc">{{ t('brand.featureRouteDesc') }}</div>
+            <div class="card-title">{{ t('brand.featureRoute') }}</div>
+            <div class="card-desc">{{ t('brand.featureRouteDesc') }}</div>
           </div>
           <div class="brand-card">
-            <div class="brand-title">{{ t('brand.featureFavorites') }}</div>
-            <div class="brand-desc">{{ t('brand.featureFavoritesDesc') }}</div>
+            <div class="card-title">{{ t('brand.featureFavorites') }}</div>
+            <div class="card-desc">{{ t('brand.featureFavoritesDesc') }}</div>
           </div>
           <div class="brand-card">
-            <div class="brand-title">{{ t('obstacle.report') }}</div>
-            <div class="brand-desc">{{ t('obstacle.submitSuccess') }}</div>
+            <div class="card-title">{{ t('obstacle.report') }}</div>
+            <div class="card-desc">{{ t('obstacle.submitSuccess') }}</div>
           </div>
           <div class="brand-card">
-            <div class="brand-title">{{ t('common.share') }}</div>
-            <div class="brand-desc">{{ t('toast.linkCopied') }}</div>
+            <div class="card-title">{{ t('common.share') }}</div>
+            <div class="card-desc">{{ t('toast.linkCopied') }}</div>
           </div>
         </div>
-        <div class="brand-foot">{{ t('brand.registerFoot') }}</div>
-      </section>
+        <p class="brand-foot">{{ t('brand.registerFoot') }}</p>
+      </div>
+    </div>
 
-      <section class="panel">
-        <div class="panel-tag">{{ t('auth.newUserTag') }}</div>
-        <div class="panel-title">{{ t('auth.registerTitle') }}</div>
-        <div class="panel-sub">{{ t('auth.userLoginHint') }}</div>
+    <!-- 右侧表单区 -->
+    <div class="form-side">
+      <div class="form-card">
+        <!-- 身份标签 -->
+        <div class="role-badge">
+          {{ t('auth.newUserTag') }}
+        </div>
 
+        <h2 class="form-title">{{ t('auth.registerTitle') }}</h2>
+        <p class="form-sub">{{ t('auth.userLoginHint') }}</p>
+
+        <!-- 注册表单 -->
         <form class="form" @submit.prevent="register">
           <div class="field">
-            <label class="label">{{ t('auth.username') }}</label>
+            <label class="field-label">{{ t('auth.username') }}</label>
             <input
               data-testid="register-username"
-              class="input"
+              class="field-input"
               type="text"
               v-model="username"
               autocomplete="username"
@@ -88,11 +103,12 @@ async function register() {
               :disabled="loading"
             />
           </div>
+
           <div class="field">
-            <label class="label">{{ t('auth.password') }}</label>
+            <label class="field-label">{{ t('auth.password') }}</label>
             <input
               data-testid="register-password"
-              class="input"
+              class="field-input"
               type="password"
               v-model="password"
               autocomplete="new-password"
@@ -101,231 +117,391 @@ async function register() {
             />
           </div>
 
-          <div class="actions">
-            <button data-testid="register-submit" type="submit" class="btn primary" :disabled="loading">
-              {{ loading ? t('auth.registerLoading') : t('auth.createAccountButton') }}
-            </button>
-            <button type="button" class="btn ghost" :disabled="loading" @click="$router.push('/login')">
-              {{ t('auth.backToLogin') }}
+          <!-- 错误/成功提示 -->
+          <div v-if="error" class="status-bar err">
+            <span class="status-icon">!</span>
+            {{ error }}
+          </div>
+          <div v-if="success" class="status-bar ok">
+            <span class="status-icon">✓</span>
+            {{ success }}
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="form-actions">
+            <button
+              data-testid="register-submit"
+              class="btn-primary"
+              type="submit"
+              :disabled="loading"
+            >
+              <span v-if="loading" class="btn-spinner"></span>
+              {{ loading ? t('common.loading') : t('nav.register') }}
             </button>
           </div>
         </form>
 
-        <div v-if="success" class="info-card status ok">{{ success }}</div>
-        <div v-if="error" class="info-card status err">{{ error }}</div>
-      </section>
+        <!-- 辅助链接 -->
+        <div class="form-assist">
+          <span class="assist-text">{{ t('auth.hasAccount') }}</span>
+          <RouterLink class="assist-link" to="/login">{{ t('nav.login') }}</RouterLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
-
+/* ===== 页面整体布局 ===== */
 .auth-page {
   min-height: 100vh;
   display: flex;
+  background: var(--ui-bg);
+  font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+}
+
+/* ===== 左侧品牌区 ===== */
+.brand-side {
+  position: relative;
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
-  font-family: 'Manrope', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  color: var(--ink);
-  background:
-    radial-gradient(900px 500px at 8% 10%, rgba(14, 165, 164, 0.18), transparent 60%),
-    radial-gradient(900px 480px at 92% 20%, rgba(249, 115, 22, 0.18), transparent 62%),
-    linear-gradient(135deg, #fff7ed 0%, #f0f9ff 55%, #ecfeff 100%);
-  position: relative;
+  background: linear-gradient(135deg, #0c4a4a 0%, #0ea5a4 60%, #14b8a6 100%);
   overflow: hidden;
-  --ink: #0f172a;
-  --muted: #475569;
-  --card: rgba(255, 255, 255, 0.88);
-  --line: rgba(15, 23, 42, 0.12);
-  --accent: #0ea5a4;
-  --shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  padding: 48px;
 }
 
-.auth-shell {
-  width: min(1080px, 100%);
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 18px;
+/* 背景光晕装饰 */
+.brand-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  top: -100px;
+  right: -100px;
+  pointer-events: none;
 }
 
-@media (max-width: 920px) {
-  .auth-shell {
-    grid-template-columns: 1fr;
-  }
+.brand-glow::after {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  bottom: -80px;
+  left: -60px;
 }
 
-.brand {
-  padding: 28px 26px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: var(--shadow);
+.brand-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  max-width: 400px;
+  width: 100%;
 }
 
-.brand-chip {
-  display: inline-flex;
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(14, 165, 164, 0.35);
-  background: rgba(14, 165, 164, 0.08);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  justify-content: center;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.brand h1 {
-  margin: 14px 0 8px;
-  font-size: 34px;
-  line-height: 1.1;
+.brand-icon {
+  font-size: 28px;
+}
+
+.brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.brand-slogan {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .brand-sub {
-  margin: 0 0 18px;
-  color: var(--muted);
+  font-size: 14px;
+  opacity: 0.75;
+  margin-bottom: 28px;
+  line-height: 1.6;
 }
 
+/* 功能特性卡片网格 */
 .brand-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-@media (max-width: 560px) {
-  .brand-grid {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 28px;
 }
 
 .brand-card {
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 14px;
-  padding: 12px 12px;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(4px);
 }
 
-.brand-title {
-  font-weight: 800;
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
   margin-bottom: 4px;
+  opacity: 0.9;
 }
 
-.brand-desc {
-  color: var(--muted);
-  font-size: 13px;
+.card-desc {
+  font-size: 11px;
+  opacity: 0.6;
+  line-height: 1.4;
 }
 
 .brand-foot {
-  margin-top: 16px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.panel {
-  padding: 22px 20px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: var(--shadow);
-  align-self: start;
-}
-
-.panel-tag {
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(14, 165, 164, 0.12);
-  border: 1px solid rgba(14, 165, 164, 0.25);
   font-size: 12px;
+  opacity: 0.5;
+  line-height: 1.6;
+}
+
+/* ===== 右侧表单区 ===== */
+.form-side {
+  flex: 0 0 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--ui-bg);
+}
+
+.form-card {
+  width: 100%;
+  max-width: 340px;
+}
+
+/* 身份标签 */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  background: rgba(14, 165, 164, 0.1);
+  color: #0ea5a4;
+  border: 1px solid rgba(14, 165, 164, 0.2);
 }
 
-.panel-title {
-  margin-top: 12px;
-  font-size: 22px;
+.form-title {
+  font-size: 26px;
   font-weight: 800;
+  color: var(--ui-ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
-.panel-sub {
-  margin-top: 8px;
-  color: var(--muted);
+.form-sub {
   font-size: 13px;
+  color: var(--ui-muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
 }
 
+/* 表单字段 */
 .form {
-  margin-top: 16px;
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .field {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.label {
+.field-label {
   font-size: 12px;
   font-weight: 700;
+  color: var(--ui-ink);
+  letter-spacing: 0.02em;
 }
 
-.input {
-  padding: 10px 12px;
-  border: 1px solid rgba(15, 23, 42, 0.16);
+.field-input {
+  padding: 11px 14px;
+  border: 1.5px solid var(--ui-line);
   border-radius: 10px;
   font-size: 14px;
+  color: var(--ui-ink);
+  background: var(--ui-bg);
   outline: none;
-  background: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+.field-input:focus {
+  border-color: #0ea5a4;
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.1);
 }
 
-.btn {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: white;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-
-.btn.ghost {
-  background: rgba(15, 23, 42, 0.04);
-}
-
-.btn:disabled {
-  opacity: 0.6;
+.field-input:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.info-card.status {
-  margin-top: 14px;
+/* 状态提示条 */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
   font-size: 13px;
 }
 
-.info-card.status.ok {
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.08);
-  color: rgb(5, 122, 85);
+.status-bar.err {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
 }
 
-.info-card.status.err {
-  border-color: rgba(220, 38, 38, 0.35);
-  background: rgba(220, 38, 38, 0.08);
-  color: rgb(153, 27, 27);
+.status-bar.ok {
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #16a34a;
+}
+
+.status-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  background: currentColor;
+  color: #fff;
+}
+
+.status-bar.err .status-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.status-bar.ok .status-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+/* 操作按钮 */
+.form-actions {
+  margin-top: 4px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 11px 16px;
+  background: #0ea5a4;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 辅助链接 */
+.form-assist {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ui-muted);
+}
+
+.assist-link {
+  color: #0ea5a4;
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+/* ===== 响应式：移动端单栏 ===== */
+@media (max-width: 768px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .brand-side {
+    flex: none;
+    padding: 32px 24px;
+    min-height: 220px;
+  }
+
+  .brand-slogan {
+    font-size: 20px;
+  }
+
+  .brand-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-side {
+    flex: none;
+    padding: 32px 24px;
+  }
+
+  .form-card {
+    max-width: 100%;
+  }
 }
 </style>
