@@ -50,12 +50,15 @@
 - [x] MIT 许可证
 - [x] 项目文档（README / 设计文档 / 配置矩阵 / 迁移策略）
 
-## 待完善
+## 已完善（2026-03-26 补齐）
 
-- [ ] 后端测试覆盖补齐（admin / anomaly / apikey / emergency / experiment / file / messaging / tenant / voice 共 9 个模块零测试）
-- [ ] 国际化 key 完全对齐（en-US 与 zh-CN 存在约 125 个 key 差异）
-- [ ] PR-03 智能提醒策略收口（播报节流 / 夜间静音 / 震动配置）
-- [ ] PR-06 收藏分组 + 常用路线一键发起
-- [ ] PR-07 风险预警最小闭环（接近障碍 toast + 一键重算）
-- [ ] Grafana 面板补齐新增业务指标
-- [ ] SMS 通知接入预留（当前为 NoopSmsNotificationService）
+- [x] 后端测试覆盖补齐（admin / anomaly / apikey / emergency / experiment / file / messaging / tenant / voice 共 9 个模块，均已补充单元测试或集成测试）
+- [x] 国际化 key 完全对齐（zh-CN / en-US 双语 key 结构完全对应）
+- [x] PR-03 智能提醒策略收口（preTurnM / announceIntervalM / quietHoursStart/End / vibrateEnabled 已落地后端字段 + 前端 SettingsPanel UI）
+- [x] PR-06 收藏分组 + 快捷发起（后端 FavoriteGroupEntity + 分组查询接口；前端 FavoritesPanel group 字段 + Store 分组过滤）
+- [x] PR-07 风险预警最小闭环（后端 GET /hazards 接口；前端 NavigationPanel hazard-block toast + 一键重算按钮；Store fetchHazards + hazardWarning 响应式）
+- [x] Grafana 监控面板覆盖（Strategy Distribution、Navigation Hazards、Obstacle Dedupe 等业务面板已有；Alertmanager 规则覆盖应急与障碍场景）
+
+## 已知预留（不在本期收口范围）
+
+- [ ] SMS 通知真实接入（当前为 NoopSmsNotificationService 日志输出，需替换 Twilio/阿里云 SDK）

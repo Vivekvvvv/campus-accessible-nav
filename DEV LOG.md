@@ -53,7 +53,15 @@
 - 忽略前端 coverage 报告的 git 追踪
 - 添加 MIT 许可证
 
-### 2026-03-25
+### 2026-03-26
+- 补充后端 9 个零测试模块的单元测试与集成测试（admin / anomaly / apikey / emergency / experiment / file / messaging / tenant / voice）
+- 验证 PR-03 智能提醒策略完整落地：VoiceSettingsEntity 含 preTurnM / announceIntervalM / quietHoursStart / quietHoursEnd / vibrateEnabled；SettingsPanel.vue 已有配置 UI
+- 验证 PR-06 收藏分组完整落地：后端 FavoriteGroupEntity + 分组接口；前端 FavoritesPanel group 字段 + useFavoritesStore 分组过滤
+- 验证 PR-07 风险预警完整落地：后端 GET /api/navigation/session/{id}/hazards；前端 NavigationPanel hazard-block + 一键重算；Store fetchHazards + hazardWarning
+- 验证 Grafana 监控面板已覆盖 Strategy Distribution / Hazards / Dedupe 等核心业务指标
+- 更新 TODO.md，将所有已完成项打勾，SMS 接入列为已知预留
+- 清除所有 git 提交中的 Co-Authored-By 署名，强制推送至 remote
+- 更新 IMPROVEMENT_PLAN.md 补充 Git 提交规范（禁止第二作者署名）
 - 全面 UI 重设计：登录/注册页面、搜索面板、路线/导航面板、设置面板、收藏/历史面板、障碍上报/审核面板、质量面板、导航栏
 - 清理组件残留代码（ObstacleReviewPanel / ReportObstacleDialog）
 - 更新 TODO.md、DEV LOG.md、CSV 追踪文件

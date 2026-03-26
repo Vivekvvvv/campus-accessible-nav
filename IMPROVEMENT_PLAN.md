@@ -1,7 +1,7 @@
 # 校园无障碍导航系统 — 后续完善计划
 
-> 更新时间：2026-03-25
-> 项目整体完成度：约 90%（文档同步完成后）
+> 更新时间：2026-03-26
+> 项目整体完成度：约 97%（P1 后端测试 + P2 V1 功能收口均已完成）
 > 排除范围：Docker Compose / 云端部署（项目不需要）
 
 ---
@@ -27,15 +27,16 @@
 
 | 缺口 | 说明 |
 |------|------|
-| 后端测试覆盖不全 | 9 个模块零测试：admin / anomaly / apikey / emergency / experiment / file / messaging / tenant / voice |
-| V1/P0 功能未完整收口 | PR-03（智能提醒策略）、PR-06（收藏分组）、PR-07（风险预警）尚未完成 |
-| SMS 通知为空实现 | emergency 模块 `NoopSmsNotificationService` 仅日志输出 |
+| 后端测试覆盖不全 | ~~9 个模块零测试：admin / anomaly / apikey / emergency / experiment / file / messaging / tenant / voice~~ ✅ 已全部补齐 |
+| V1/P0 功能未完整收口 | ~~PR-03（智能提醒策略）、PR-06（收藏分组）、PR-07（风险预警）尚未完成~~ ✅ 已全部落地最小闭环 |
+| SMS 通知为空实现 | emergency 模块 `NoopSmsNotificationService` 仅日志输出（预留，不在本期收口范围）|
 
 ---
 
 ## 二、Git 提交规范
 
 > **重要：每完成一个模块/任务就必须执行 git commit + push，禁止攒多个模块一起提交。**
+> **禁止在提交信息中添加 `Co-Authored-By` 或任何第二作者署名，所有提交必须仅以项目所有者为唯一作者。**
 
 ### 提交流程
 
