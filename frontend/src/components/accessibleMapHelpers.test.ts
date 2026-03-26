@@ -104,11 +104,11 @@ describe('accessibleMapHelpers', () => {
       ],
     }
     const transformed = buildDisplayGeoJson(route, true, (lng, lat) => ({ lng: lng + 1, lat: lat + 1 }))
-    expect(transformed?.features?.[0]?.geometry?.coordinates).toEqual([
+    expect(((transformed?.features?.[0]?.geometry as { coordinates?: unknown })?.coordinates)).toEqual([
       [114.2, 24.27],
       [114.21, 24.28],
     ])
-    expect(buildDisplayGeoJson(route, false, (lng, lat) => ({ lng: lng + 1, lat: lat + 1 }))?.features?.[0]?.geometry?.coordinates).toEqual([
+    expect((buildDisplayGeoJson(route, false, (lng, lat) => ({ lng: lng + 1, lat: lat + 1 }))?.features?.[0]?.geometry as { coordinates?: unknown })?.coordinates).toEqual([
       [113.2, 23.27],
       [113.21, 23.28],
     ])

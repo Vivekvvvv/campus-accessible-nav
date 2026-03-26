@@ -199,7 +199,14 @@ class ApiKeyServiceTest {
 
     private ApiKeyEntity buildActiveKey(Long id) {
         ApiKeyEntity e = new ApiKeyEntity();
-        e.setId(id);
+        // id 字段无 setter（@GeneratedValue），使用反射注入
+        try {
+            java.lang.reflect.Field f = ApiKeyEntity.class.getDeclaredField("id");
+            f.setAccessible(true);
+            f.set(e, id);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
         e.setKeyId("ak_" + id);
         e.setKeySecretHash(ApiKeyService.sha256Hex("secret" + id));
         e.setOwnerId("owner");

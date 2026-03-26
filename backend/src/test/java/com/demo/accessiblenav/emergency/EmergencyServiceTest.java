@@ -61,9 +61,9 @@ class EmergencyServiceTest {
 
         when(zoneRepository.findZonesNear(anyString(), anyDouble(), anyDouble(), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(contactRepository.findByUserIdAndTenantId(anyString(), anyString()))
+        when(contactRepository.findByUserIdAndTenantIdOrderByIsPrimaryDesc(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
-        when(volunteerRepository.findByTenantIdAndActiveTrueOrderByLastSeenAtDesc(anyString()))
+        when(volunteerRepository.findByIsActiveTrueAndTenantId(anyString()))
                 .thenReturn(Collections.emptyList());
 
         ArgumentCaptor<EmergencyEventEntity> captor = ArgumentCaptor.forClass(EmergencyEventEntity.class);
@@ -89,9 +89,9 @@ class EmergencyServiceTest {
 
         when(zoneRepository.findZonesNear(anyString(), anyDouble(), anyDouble(), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(contactRepository.findByUserIdAndTenantId(anyString(), anyString()))
+        when(contactRepository.findByUserIdAndTenantIdOrderByIsPrimaryDesc(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
-        when(volunteerRepository.findByTenantIdAndActiveTrueOrderByLastSeenAtDesc(anyString()))
+        when(volunteerRepository.findByIsActiveTrueAndTenantId(anyString()))
                 .thenReturn(Collections.emptyList());
 
         ArgumentCaptor<EmergencyEventEntity> captor = ArgumentCaptor.forClass(EmergencyEventEntity.class);
@@ -113,9 +113,9 @@ class EmergencyServiceTest {
 
         when(zoneRepository.findZonesNear(anyString(), anyDouble(), anyDouble(), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(contactRepository.findByUserIdAndTenantId(anyString(), anyString()))
+        when(contactRepository.findByUserIdAndTenantIdOrderByIsPrimaryDesc(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
-        when(volunteerRepository.findByTenantIdAndActiveTrueOrderByLastSeenAtDesc(anyString()))
+        when(volunteerRepository.findByIsActiveTrueAndTenantId(anyString()))
                 .thenReturn(Collections.emptyList());
 
         ArgumentCaptor<EmergencyEventEntity> captor = ArgumentCaptor.forClass(EmergencyEventEntity.class);

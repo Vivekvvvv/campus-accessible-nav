@@ -1,9 +1,14 @@
 package com.demo.accessiblenav.tenant;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,6 +19,24 @@ class TenantFilterTest {
 
     private final TenantFilter filter = new TenantFilter();
 
+    // ------------------------------------------------------------------ helpers
+
+    /** 简单的捕获链：在 doFilter 内执行 runnable，然后传播调用。 */
+    private static FilterChain capturingChain(Runnable capture) {
+        return new FilterChain() {
+            @Override
+            public void doFilter(ServletRequest req, ServletResponse res)
+                    throws IOException, ServletException {
+                capture.run();
+            }
+        };
+    }
+
+    /** 空链：什么都不做，只用来验证 filter 是否调用了 chain.doFilter。 */
+    private static FilterChain emptyChain() {
+        return (req, res) -> {};
+    }
+
     // ------------------------------------------------------------------ header present
 
     @Test
@@ -22,13 +45,8 @@ class TenantFilterTest {
         request.addHeader(TenantFilter.TENANT_HEADER, "campus-a");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        // 在 filter chain 内捕获 TenantContext 的值
         String[] captured = new String[1];
-        MockFilterChain chain = new MockFilterChain(null, (req, res) -> {
-            captured[0] = TenantContext.get();
-        });
-
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, capturingChain(() -> captured[0] = TenantContext.get()));
 
         assertThat(captured[0]).isEqualTo("campus-a");
     }
@@ -39,11 +57,7 @@ class TenantFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         String[] captured = new String[1];
-        MockFilterChain chain = new MockFilterChain(null, (req, res) -> {
-            captured[0] = TenantContext.get();
-        });
-
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, capturingChain(() -> captured[0] = TenantContext.get()));
 
         assertThat(captured[0]).isEqualTo(TenantContext.DEFAULT_TENANT);
     }
@@ -55,59 +69,44 @@ class TenantFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         String[] captured = new String[1];
-        MockFilterChain chain = new MockFilterChain(null, (req, res) -> {
-            captured[0] = TenantContext.get();
-        });
-
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, capturingChain(() -> captured[0] = TenantContext.get()));
 
         assertThat(captured[0]).isEqualTo(TenantContext.DEFAULT_TENANT);
     }
 
     @Test
-    void invalidCharactersInHeader_shouldFallbackToDefault() throws Exception {
+    void invalidCharsInHeader_shouldFallbackToDefault() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        // 包含非法字符（空格和点）
-        request.addHeader(TenantFilter.TENANT_HEADER, "bad tenant!");
+        request.addHeader(TenantFilter.TENANT_HEADER, "bad tenant!@#");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         String[] captured = new String[1];
-        MockFilterChain chain = new MockFilterChain(null, (req, res) -> {
-            captured[0] = TenantContext.get();
-        });
-
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, capturingChain(() -> captured[0] = TenantContext.get()));
 
         assertThat(captured[0]).isEqualTo(TenantContext.DEFAULT_TENANT);
     }
 
     @Test
-    void validHeader_contextShouldBeClearedAfterRequest() throws Exception {
+    void contextShouldBeClearedAfterRequest() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(TenantFilter.TENANT_HEADER, "campus-b");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain chain = new MockFilterChain();
 
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, emptyChain());
 
-        // filter finally block should have cleared context
+        // finally block should have cleared context
         assertThat(TenantContext.get()).isEqualTo(TenantContext.DEFAULT_TENANT);
     }
 
     @Test
     void headerTooLong_shouldFallbackToDefault() throws Exception {
-        // regex 限制 1~32 个字符，超过 32 个字符应回退
         String longTenantId = "a".repeat(33);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(TenantFilter.TENANT_HEADER, longTenantId);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         String[] captured = new String[1];
-        MockFilterChain chain = new MockFilterChain(null, (req, res) -> {
-            captured[0] = TenantContext.get();
-        });
-
-        filter.doFilter(request, response, chain);
+        filter.doFilter(request, response, capturingChain(() -> captured[0] = TenantContext.get()));
 
         assertThat(captured[0]).isEqualTo(TenantContext.DEFAULT_TENANT);
     }

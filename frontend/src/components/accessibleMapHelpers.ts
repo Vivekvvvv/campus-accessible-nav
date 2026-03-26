@@ -153,8 +153,9 @@ export function buildDisplayGeoJson(
   }
 
   cloned.features.forEach((feature) => {
-    if (feature.geometry && feature.geometry.coordinates) {
-      feature.geometry.coordinates = transformCoordsRecursively(feature.geometry.coordinates, transformFn)
+    const geometry = feature.geometry as { coordinates?: unknown } | null | undefined
+    if (geometry && geometry.coordinates) {
+      geometry.coordinates = transformCoordsRecursively(geometry.coordinates, transformFn)
     }
   })
 
