@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/files")
 @Tag(name = "文件上传", description = "图片文件上传服务")
+@Slf4j
 public class FileUploadController {
 
     // 从配置文件读取上传目录，默认为 ./uploads
@@ -79,7 +81,7 @@ public class FileUploadController {
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("File upload failed", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Upload failed: " + e.getMessage(), e);
         }
     }
