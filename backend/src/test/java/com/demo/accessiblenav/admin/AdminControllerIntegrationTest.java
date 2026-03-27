@@ -39,11 +39,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "user", roles = "USER")
-    void ping_asUser_shouldReturnOk() throws Exception {
-        // ping 不需要 ADMIN 角色，任何已认证用户均可访问
+    void ping_asUser_shouldReturn403() throws Exception {
+        // ping 仅允许 ADMIN/REVIEWER/EDITOR/VIEWER 角色，USER 角色应被拒绝
         mockMvc.perform(get("/api/admin/ping"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("ok")));
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -65,10 +64,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "regular", roles = "USER")
-    void profile_asUser_shouldReturnUsernameAndRole() throws Exception {
+    void profile_asUser_shouldReturn403() throws Exception {
+        // profile 仅允许 ADMIN/REVIEWER/EDITOR/VIEWER 角色，USER 角色应被拒绝
         mockMvc.perform(get("/api/admin/profile"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").isString());
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

@@ -81,8 +81,7 @@ async function rollbackToSnapshot(snapshotId) {
       <span class="summary-arrow"></span>
     </summary>
     <div class="panel-body">
-
-      <!-- 未登录管理员提示 -->
+<!-- 未登录管理员提示 -->
       <div v-if="!hasAdmin" class="no-admin-hint">
         <span class="hint-icon">⊘</span>
         {{ t('quality.adminLoginHint') }}

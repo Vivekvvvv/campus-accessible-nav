@@ -110,10 +110,6 @@ function changeLocale(event) {
   setLocale(event.target.value)
 }
 
-function changeTheme(event) {
-  themeStore.setTheme(event.target.value)
-}
-
 function saveAccessibilityProfile() {
   emit('save-accessibility-profile', { ...accessibilityForm.value })
 }
@@ -132,8 +128,7 @@ function saveVoicePolicy() {
       <span class="summary-arrow"></span>
     </summary>
     <div class="panel-body">
-
-      <!-- 外观设置区 -->
+<!-- 外观设置区 -->
       <div class="settings-group">
         <div class="group-title">外观</div>
         <!-- 语言 -->

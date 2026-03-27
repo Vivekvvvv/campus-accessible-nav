@@ -74,8 +74,7 @@ function removeFavorite(id) {
       <span class="summary-arrow"></span>
     </summary>
     <div class="panel-body">
-
-      <!-- 添加收藏表单 -->
+<!-- 添加收藏表单 -->
       <div class="fav-form">
         <div class="form-title">添加收藏</div>
         <input data-testid="favorite-name" class="fav-input" :placeholder="t('favorites.namePlaceholder')" v-model="nameModel" />

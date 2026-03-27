@@ -191,8 +191,8 @@ class EmergencyControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void myEvents_shouldReturnList() throws Exception {
-        mockMvc.perform(get("/api/v1/emergency/my-events"))
+    void myHistory_shouldReturnList() throws Exception {
+        mockMvc.perform(get("/api/v1/emergency/history"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
     }
