@@ -15,7 +15,9 @@ backend/data/h2/
 
 # Uploads
 uploads/
-
+backend/test-uploads/
+backend/logs/
+logs/
 # IDE
 .vscode/
 .idea/
