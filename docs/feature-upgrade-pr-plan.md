@@ -19,15 +19,12 @@
 
 ## 3. V1（P0）可开发 PR 清单
 
-> 进度备注（2026-03-25）：
-> - PR-01 已落地：用户无障碍偏好档案完整实现（profile 模块 + 前端 SettingsPanel 偏好区块 + 单测/IT）。
-> - PR-02 已落地：路由权重策略完整实现（strategyWeights + route passability policy + 管理接口）。
-> - PR-04 已落地：障碍上报照片上传 + PostGIS KNN 自动反查边已实现。
-> - PR-05 已落地：重复上报检测与合并（DedupeKeyGenerator + CredibilityScorer）已实现。
-> - PR-08 已落地：监控告警核心规则已部署。
-> - PR-03 待收口：语音提醒策略字段已预留（VoiceSettingsEntity），播报节流/夜间静音前端逻辑待完善。
-> - PR-06 待收口：收藏基础 CRUD 已实现，分组 + 常用路线一键发起待补充。
-> - PR-07 待收口：hazard 设计稿已完成（docs/design/nav-hazard-warning.md），后端 API + 前端预警交互待实现。
+> 进度备注（2026-03-27）：
+> - PR-03 最小闭环已落地：`VoiceSettingsEntity` 已有 `quietHoursStart/quietHoursEnd/vibrateEnabled` 等字段，`SettingsPanel.vue` 已实现播报策略 UI，前端节流逻辑已完成单测覆盖。
+> - PR-06 最小闭环已落地：收藏基础 CRUD 已实现，`FavoritesPanel.vue` 支持分组/标签筛选/导入导出。
+> - PR-07 最小闭环已落地：`GET /api/navigation/session/{id}/hazards` 已实现，前端 hazard 轮询与预警 toast 逻辑已集成。
+> - PR-08 已完全收口：`EmergencyEventUnresolved30m` 告警规则已补充，Grafana 面板新增偏好策略分布、播报抑制比率、快捷路线次数、障碍去重比率 4 个面板。
+> - SMS provider 配置化开关已实现：`app.sms.provider=noop`（默认）/ `twilio` / `aliyun`，`NoopSmsNotificationService` 绑定 `@ConditionalOnProperty`。
 
 ## 3.1 PR-01 用户无障碍偏好档案（轮椅/视障/推车）
 

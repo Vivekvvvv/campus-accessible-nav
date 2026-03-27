@@ -124,6 +124,10 @@ file:
     dir: ${FILE_UPLOAD_DIR:./uploads}
     url-prefix: ${FILE_UPLOAD_URL_PREFIX:/uploads}
 
+app:
+  sms:
+    provider: ${APP_SMS_PROVIDER:noop}
+
 management:
   endpoints:
     web:

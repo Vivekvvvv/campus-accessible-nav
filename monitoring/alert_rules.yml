@@ -355,3 +355,23 @@ groups:
         annotations:
           summary: "High review SLA breach rate"
           description: "More than 30% of reports are being escalated for 30m (current={{ $value | humanizePercentage }})."
+
+      # Emergency event unresolved for > 30 minutes
+      - alert: EmergencyEventUnresolved30m
+        expr: sum(emergency_events_active) > 0 and (time() - min(emergency_event_created_at_seconds)) > 1800
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Emergency event unresolved for over 30 minutes"
+          description: "At least one emergency event has been active for more than 30 minutes without resolution. Immediate response required."
+
+      # Emergency broadcast rate anomaly
+      - alert: EmergencyBroadcastRateAnomaly
+        expr: sum(rate(emergency_broadcasts_total[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Abnormally high emergency broadcast rate"
+          description: "Emergency broadcast rate exceeded 5/s for 5m (current={{ $value | humanizeNoDecimalPoints }}). Possible broadcast storm."

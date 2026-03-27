@@ -1409,6 +1409,94 @@
       ],
       "title": "Obstacle Dedupe Enabled (1/0)",
       "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "short", "min": 0 },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 160 },
+      "id": 38,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "sum(accessibility_profile_updates_total) by (mode)",
+          "legendFormat": "{{mode}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Accessibility Profile Preference Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 160 },
+      "id": 39,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(navigation_client_events_total{type=\"QUIET_HOUR_SUPPRESSED\"}[5m])) / clamp_min(sum(rate(navigation_client_events_total{type=~\"VOICE_ANNOUNCED|QUIET_HOUR_SUPPRESSED\"}[5m])), 1e-9)",
+          "legendFormat": "suppression ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Voice Broadcast Suppression Ratio (Quiet Hours)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "min": 0 },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 168 },
+      "id": 40,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(favorites_quick_route_launches_total[5m]))",
+          "legendFormat": "quick-route launches",
+          "refId": "A"
+        }
+      ],
+      "title": "Favorites Quick Route Launches Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 168 },
+      "id": 41,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(obstacle_reports_total{event=\"deduplicated\"}[1h])) / clamp_min(sum(rate(obstacle_reports_total{event=\"created\"}[1h])), 1e-9)",
+          "legendFormat": "dedupe ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Obstacle Dedupe Ratio (Detail)",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
@@ -1428,6 +1516,6 @@
   "timezone": "",
   "title": "Accessible Nav - Backend Overview (Draft)",
   "uid": "accessible-nav-backend",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
