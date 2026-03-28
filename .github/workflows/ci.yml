@@ -58,6 +58,7 @@ jobs:
   backend:
     name: Backend CI
     runs-on: ubuntu-latest
+    needs: [yaml-lint]
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
     defaults:
       run:
