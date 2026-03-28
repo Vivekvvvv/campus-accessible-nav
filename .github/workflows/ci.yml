@@ -38,21 +38,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install yamllint
+        run: pip install yamllint
+
       - name: Check application YAML for duplicate keys
         run: |
-          python3 -c "
-          import yaml, sys, pathlib
-          errors = []
-          for f in sorted(pathlib.Path('backend/src/main/resources').glob('application*.yml')):
-              try:
-                  yaml.safe_load(f.read_text(encoding='utf-8'))
-                  print(f'OK: {f}')
-              except yaml.YAMLError as e:
-                  errors.append(f'FAIL: {f}: {e}')
-                  print(f'FAIL: {f}: {e}', file=sys.stderr)
-          if errors:
-              sys.exit(1)
-          "
+          yamllint -d '{extends: relaxed, rules: {duplicate-keys: enable}}' \
+            backend/src/main/resources/application*.yml
 
   # Backend Build and Test
   backend:
