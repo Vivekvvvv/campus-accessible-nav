@@ -30,6 +30,30 @@ jobs:
       - name: Validate vulnerability allowlists (expiry + reason)
         run: bash scripts/security/check-vuln-allowlist.sh
 
+  yaml-lint:
+    name: YAML Config Lint (Duplicate Key Gate)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run_hazard_edge_only != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check application YAML for duplicate keys
+        run: |
+          python3 -c "
+          import yaml, sys, pathlib
+          errors = []
+          for f in sorted(pathlib.Path('backend/src/main/resources').glob('application*.yml')):
+              try:
+                  yaml.safe_load(f.read_text(encoding='utf-8'))
+                  print(f'OK: {f}')
+              except yaml.YAMLError as e:
+                  errors.append(f'FAIL: {f}: {e}')
+                  print(f'FAIL: {f}: {e}', file=sys.stderr)
+          if errors:
+              sys.exit(1)
+          "
+
   # Backend Build and Test
   backend:
     name: Backend CI
