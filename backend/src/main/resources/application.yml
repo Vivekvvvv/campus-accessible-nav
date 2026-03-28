@@ -101,6 +101,8 @@ app:
   campus:
     # minLat,minLng,maxLat,maxLng (WGS84)
     bbox: ${CAMPUS_BBOX:23.2732730,113.1995461,23.2766018,113.2050374}
+  sms:
+    provider: ${APP_SMS_PROVIDER:noop}
 
 # 路由缓存配置 (两级缓存: L1=Caffeine本地缓存, L2=Redis分布式缓存)
 route:
@@ -118,15 +120,13 @@ route:
       max-size: ${ROUTE_CACHE_GRID_MAX_SIZE:50000}
       expire-minutes: ${ROUTE_CACHE_GRID_EXPIRE_MINUTES:120}
       size-meters: ${ROUTE_CACHE_GRID_SIZE_METERS:50}
+  sms:
+    provider: ${APP_SMS_PROVIDER:noop}
 
 file:
   upload:
     dir: ${FILE_UPLOAD_DIR:./uploads}
     url-prefix: ${FILE_UPLOAD_URL_PREFIX:/uploads}
-
-app:
-  sms:
-    provider: ${APP_SMS_PROVIDER:noop}
 
 management:
   endpoints:
