@@ -256,7 +256,8 @@ campus-accessible-nav/
 
 仓库 `.github/workflows/ci.yml` 当前包含以下门禁：
 
-- 后端构建与测试
+- **YAML 配置重复键检查**（yamllint，后端构建前置门禁）
+- 后端构建与测试（依赖 YAML lint 通过后才运行）
 - 前端 lint / 单测 / build / bundle budget
 - OpenAPI breaking change 检查
 - Flyway migration policy 检查
