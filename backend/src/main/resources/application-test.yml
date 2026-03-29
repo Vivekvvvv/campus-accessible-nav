@@ -32,6 +32,9 @@ app:
     use-postgis-knn: false
 
 management:
+  health:
+    redis:
+      enabled: false
   endpoints:
     web:
       exposure:

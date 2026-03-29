@@ -27,6 +27,9 @@ spring:
     enabled: false
 
 management:
+  health:
+    redis:
+      enabled: false
   endpoints:
     web:
       exposure:

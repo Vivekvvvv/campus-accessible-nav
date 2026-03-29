@@ -43,7 +43,7 @@ jobs:
 
       - name: Check application YAML for duplicate keys
         run: |
-          yamllint -d '{extends: relaxed, rules: {duplicate-keys: enable}}' \
+          yamllint -d '{extends: relaxed, rules: {key-duplicates: enable, line-length: disable, new-lines: disable}}' \
             backend/src/main/resources/application*.yml
 
   # Backend Build and Test
