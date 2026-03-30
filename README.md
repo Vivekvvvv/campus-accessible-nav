@@ -274,5 +274,4 @@ campus-accessible-nav/
 
 ## 许可证
 
-当前仓库未声明开源许可证；如需公开发布到 GitHub，建议补充明确的 `LICENSE` 文件。  
-哼，这种基础治理项别再漏了，笨蛋。
+本仓库采用 `MIT License`，详见根目录 `LICENSE` 文件。
